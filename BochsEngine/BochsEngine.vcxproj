@@ -1,0 +1,336 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|ARM">
+      <Configuration>Debug</Configuration>
+      <Platform>ARM</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|ARM">
+      <Configuration>Release</Configuration>
+      <Platform>ARM</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{09d3c23a-655d-42b6-8f06-7d49b19512d7}</ProjectGuid>
+    <Keyword>WindowsRuntimeComponent</Keyword>
+    <ProjectName>BochsEngine</ProjectName>
+    <RootNamespace>BochsEngine</RootNamespace>
+    <DefaultLanguage>ru-RU</DefaultLanguage>
+    <MinimumVisualStudioVersion>12.0</MinimumVisualStudioVersion>
+    <AppContainerApplication>true</AppContainerApplication>
+    <ApplicationType>Windows Phone</ApplicationType>
+    <ApplicationTypeRevision>8.1</ApplicationTypeRevision>
+  </PropertyGroup>
+
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v120_wp81</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <PlatformToolset>v120_wp81</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v120_wp81</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <PlatformToolset>v120_wp81</PlatformToolset>
+  </PropertyGroup>
+
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup />
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">
+  </PropertyGroup>
+
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <CompileAsWinRT>false</CompileAsWinRT>
+      <PreprocessorDefinitions>WIN32;_CRT_SECURE_NO_WARNINGS;_CRT_NONSTDC_NO_DEPRECATE;USE_WITH_CPU_SIM;NO_ASSEMBLER;PARANOID;_WINRT_DLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(ProjectDir)bochs;$(ProjectDir)bochs\fpu\stubs;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalOptions>/bigobj %(AdditionalOptions)</AdditionalOptions>
+      <SDLCheck>false</SDLCheck>
+      <CompileAs>CompileAsCpp</CompileAs>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
+      <AdditionalDependencies>xaudio2.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <CompileAsWinRT>false</CompileAsWinRT>
+      <PreprocessorDefinitions>WIN32;_CRT_SECURE_NO_WARNINGS;_CRT_NONSTDC_NO_DEPRECATE;USE_WITH_CPU_SIM;NO_ASSEMBLER;PARANOID;_WINRT_DLL;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(ProjectDir)bochs;$(ProjectDir)bochs\fpu\stubs;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalOptions>/bigobj %(AdditionalOptions)</AdditionalOptions>
+      <SDLCheck>false</SDLCheck>
+      <CompileAs>CompileAsCpp</CompileAs>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
+      <AdditionalDependencies>xaudio2.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">
+    <ClCompile>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <CompileAsWinRT>false</CompileAsWinRT>
+      <PreprocessorDefinitions>WIN32;_CRT_SECURE_NO_WARNINGS;_CRT_NONSTDC_NO_DEPRECATE;USE_WITH_CPU_SIM;NO_ASSEMBLER;PARANOID;_WINRT_DLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(ProjectDir)bochs;$(ProjectDir)bochs\fpu\stubs;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalOptions>/bigobj %(AdditionalOptions)</AdditionalOptions>
+      <SDLCheck>false</SDLCheck>
+      <CompileAs>CompileAsCpp</CompileAs>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
+      <AdditionalDependencies>xaudio2.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">
+    <ClCompile>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <CompileAsWinRT>false</CompileAsWinRT>
+      <PreprocessorDefinitions>WIN32;_CRT_SECURE_NO_WARNINGS;_CRT_NONSTDC_NO_DEPRECATE;USE_WITH_CPU_SIM;NO_ASSEMBLER;PARANOID;_WINRT_DLL;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(ProjectDir)bochs;$(ProjectDir)bochs\fpu\stubs;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalOptions>/bigobj %(AdditionalOptions)</AdditionalOptions>
+      <SDLCheck>false</SDLCheck>
+      <CompileAs>CompileAsCpp</CompileAs>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
+      <AdditionalDependencies>xaudio2.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+
+  <ItemGroup>
+    <ClInclude Include="pch.h" />
+    <ClInclude Include="BochsMachine.h" />
+    <ClInclude Include="wpb_file_io_internal.h" />
+    <ClInclude Include="bochs\wpb_file_io.h" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ClCompile Include="pch.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">Create</PrecompiledHeader>
+      <CompileAsWinRT>true</CompileAsWinRT>
+    </ClCompile>
+    <ClCompile Include="BochsMachine.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Use</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Use</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">Use</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <CompileAsWinRT>true</CompileAsWinRT>
+    </ClCompile>
+    <ClCompile Include="wpb_file_io.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Use</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Use</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">Use</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <CompileAsWinRT>true</CompileAsWinRT>
+    </ClCompile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ClCompile Include="bochs/cpu/access.cc" />
+    <ClCompile Include="bochs/cpu/arith16.cc" />
+    <ClCompile Include="bochs/cpu/arith32.cc" />
+    <ClCompile Include="bochs/cpu/arith8.cc" />
+    <ClCompile Include="bochs/cpu/bcd.cc" />
+    <ClCompile Include="bochs/cpu/bit.cc" />
+    <ClCompile Include="bochs/cpu/cpu.cc" />
+    <ClCompile Include="bochs/cpu/ctrl_xfer16.cc" />
+    <ClCompile Include="bochs/cpu/ctrl_xfer32.cc" />
+    <ClCompile Include="bochs/cpu/ctrl_xfer8.cc" />
+    <ClCompile Include="bochs/cpu/ctrl_xfer_pro.cc" />
+    <ClCompile Include="bochs/cpu/data_xfer16.cc" />
+    <ClCompile Include="bochs/cpu/data_xfer32.cc" />
+    <ClCompile Include="bochs/cpu/data_xfer8.cc" />
+    <ClCompile Include="bochs/cpu/debugstuff.cc" />
+    <ClCompile Include="bochs/cpu/exception.cc" />
+    <ClCompile Include="bochs/cpu/fetchdecode.cc" />
+    <ClCompile Include="bochs/cpu/flag_ctrl.cc" />
+    <ClCompile Include="bochs/cpu/flag_ctrl_pro.cc" />
+    <ClCompile Include="bochs/cpu/init.cc" />
+    <ClCompile Include="bochs/cpu/io.cc" />
+    <ClCompile Include="bochs/cpu/io_pro.cc" />
+    <ClCompile Include="bochs/cpu/lazy_flags.cc" />
+    <ClCompile Include="bochs/cpu/logical16.cc" />
+    <ClCompile Include="bochs/cpu/logical32.cc" />
+    <ClCompile Include="bochs/cpu/logical8.cc" />
+    <ClCompile Include="bochs/cpu/mult16.cc" />
+    <ClCompile Include="bochs/cpu/mult32.cc" />
+    <ClCompile Include="bochs/cpu/mult8.cc" />
+    <ClCompile Include="bochs/cpu/paging.cc" />
+    <ClCompile Include="bochs/cpu/proc_ctrl.cc" />
+    <ClCompile Include="bochs/cpu/protect_ctrl.cc" />
+    <ClCompile Include="bochs/cpu/protect_ctrl_pro.cc" />
+    <ClCompile Include="bochs/cpu/resolve16.cc" />
+    <ClCompile Include="bochs/cpu/resolve32.cc" />
+    <ClCompile Include="bochs/cpu/segment_ctrl.cc" />
+    <ClCompile Include="bochs/cpu/segment_ctrl_pro.cc" />
+    <ClCompile Include="bochs/cpu/shift16.cc" />
+    <ClCompile Include="bochs/cpu/shift32.cc" />
+    <ClCompile Include="bochs/cpu/shift8.cc" />
+    <ClCompile Include="bochs/cpu/soft_int.cc" />
+    <ClCompile Include="bochs/cpu/stack16.cc" />
+    <ClCompile Include="bochs/cpu/stack32.cc" />
+    <ClCompile Include="bochs/cpu/stack_pro.cc" />
+    <ClCompile Include="bochs/cpu/string.cc" />
+    <ClCompile Include="bochs/cpu/tasking.cc" />
+    <ClCompile Include="bochs/cpu/vm8086.cc" />
+    <ClCompile Include="bochs/cpu/cpuid.cc" />
+    <ClCompile Include="bochs/cpu/softfloat.cc" />
+    <ClCompile Include="bochs/cpu/mmx.cc" />
+    <ClCompile Include="bochs/cpu/3dnow.cc" />
+    <ClCompile Include="bochs/cpu/sse.cc" />
+    <ClCompile Include="bochs/cpu/sse_move.cc" />
+    <ClCompile Include="bochs/cpu/sse_pfp.cc" />
+    <ClCompile Include="bochs/cpu/sse_rcp.cc" />
+    <ClCompile Include="bochs/cpu/fpu.cc">
+      <ObjectFileName>$(IntDir)cpu_fpu.obj</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="bochs/fpu/wmFPUemu_glue.cc" />
+    <ClCompile Include="bochs/fpu/div_Xsig.c"><CompileAs>CompileAsC</CompileAs></ClCompile>
+    <ClCompile Include="bochs/fpu/errors.c"><CompileAs>CompileAsC</CompileAs></ClCompile>
+    <ClCompile Include="bochs/fpu/fpu_arith.c"><CompileAs>CompileAsC</CompileAs></ClCompile>
+    <ClCompile Include="bochs/fpu/fpu_aux.c"><CompileAs>CompileAsC</CompileAs></ClCompile>
+    <ClCompile Include="bochs/fpu/fpu_entry.c"><CompileAs>CompileAsC</CompileAs></ClCompile>
+    <ClCompile Include="bochs/fpu/fpu_etc.c"><CompileAs>CompileAsC</CompileAs></ClCompile>
+    <ClCompile Include="bochs/fpu/fpu_compare.c"><CompileAs>CompileAsC</CompileAs></ClCompile>
+    <ClCompile Include="bochs/fpu/fpu_tags.c"><CompileAs>CompileAsC</CompileAs></ClCompile>
+    <ClCompile Include="bochs/fpu/fpu_trig.c"><CompileAs>CompileAsC</CompileAs></ClCompile>
+    <ClCompile Include="bochs/fpu/load_store.c"><CompileAs>CompileAsC</CompileAs></ClCompile>
+    <ClCompile Include="bochs/fpu/mul_Xsig.c"><CompileAs>CompileAsC</CompileAs></ClCompile>
+    <ClCompile Include="bochs/fpu/poly_2xm1.c"><CompileAs>CompileAsC</CompileAs></ClCompile>
+    <ClCompile Include="bochs/fpu/poly_atan.c"><CompileAs>CompileAsC</CompileAs></ClCompile>
+    <ClCompile Include="bochs/fpu/poly_l2.c"><CompileAs>CompileAsC</CompileAs></ClCompile>
+    <ClCompile Include="bochs/fpu/poly_sin.c"><CompileAs>CompileAsC</CompileAs></ClCompile>
+    <ClCompile Include="bochs/fpu/poly_tan.c"><CompileAs>CompileAsC</CompileAs></ClCompile>
+    <ClCompile Include="bochs/fpu/polynom_Xsig.c"><CompileAs>CompileAsC</CompileAs></ClCompile>
+    <ClCompile Include="bochs/fpu/reg_add_sub.c"><CompileAs>CompileAsC</CompileAs></ClCompile>
+    <ClCompile Include="bochs/fpu/reg_compare.c"><CompileAs>CompileAsC</CompileAs></ClCompile>
+    <ClCompile Include="bochs/fpu/reg_constant.c"><CompileAs>CompileAsC</CompileAs></ClCompile>
+    <ClCompile Include="bochs/fpu/reg_convert.c"><CompileAs>CompileAsC</CompileAs></ClCompile>
+    <ClCompile Include="bochs/fpu/reg_divide.c"><CompileAs>CompileAsC</CompileAs></ClCompile>
+    <ClCompile Include="bochs/fpu/reg_ld_str.c"><CompileAs>CompileAsC</CompileAs></ClCompile>
+    <ClCompile Include="bochs/fpu/reg_mul.c"><CompileAs>CompileAsC</CompileAs></ClCompile>
+    <ClCompile Include="bochs/fpu/reg_norm.c"><CompileAs>CompileAsC</CompileAs></ClCompile>
+    <ClCompile Include="bochs/fpu/reg_round.c"><CompileAs>CompileAsC</CompileAs></ClCompile>
+    <ClCompile Include="bochs/fpu/reg_u_add.c"><CompileAs>CompileAsC</CompileAs></ClCompile>
+    <ClCompile Include="bochs/fpu/reg_u_div.c"><CompileAs>CompileAsC</CompileAs></ClCompile>
+    <ClCompile Include="bochs/fpu/reg_u_mul.c"><CompileAs>CompileAsC</CompileAs></ClCompile>
+    <ClCompile Include="bochs/fpu/reg_u_sub.c"><CompileAs>CompileAsC</CompileAs></ClCompile>
+    <ClCompile Include="bochs/fpu/round_Xsig.c"><CompileAs>CompileAsC</CompileAs></ClCompile>
+    <ClCompile Include="bochs/fpu/shr_Xsig.c"><CompileAs>CompileAsC</CompileAs></ClCompile>
+    <ClCompile Include="bochs/fpu/wm_shrx.c"><CompileAs>CompileAsC</CompileAs></ClCompile>
+    <ClCompile Include="bochs/fpu/wm_sqrt.c"><CompileAs>CompileAsC</CompileAs></ClCompile>
+    <ClCompile Include="bochs/gui/control.cc" />
+    <ClCompile Include="bochs/gui/gui.cc" />
+    <ClCompile Include="bochs/gui/keymap.cc" />
+    <ClCompile Include="bochs/gui/siminterface.cc" />
+    <ClCompile Include="bochs/gui/wpbochs_gui.cc" />
+    <ClCompile Include="bochs/iodev/cdrom.cc" />
+    <ClCompile Include="bochs/iodev/cmos.cc" />
+    <ClCompile Include="bochs/iodev/devices.cc" />
+    <ClCompile Include="bochs/iodev/dma.cc" />
+    <ClCompile Include="bochs/iodev/floppy.cc" />
+    <ClCompile Include="bochs/iodev/harddrv.cc" />
+    <ClCompile Include="bochs/iodev/keyboard.cc" />
+    <ClCompile Include="bochs/iodev/acpi.cc" />
+    <ClCompile Include="bochs/iodev/pci.cc" />
+    <ClCompile Include="bochs/iodev/pci2isa.cc" />
+    <ClCompile Include="bochs/iodev/biosdev.cc" />
+    <ClCompile Include="bochs/iodev/extfpuirq.cc" />
+    <ClCompile Include="bochs/iodev/virt_timer.cc" />
+    <ClCompile Include="bochs/iodev/vmware3.cc" />
+    <ClCompile Include="bochs/iodev/serial.cc" />
+    <ClCompile Include="bochs/iodev/parallel.cc" />
+    <ClCompile Include="bochs/iodev/pic.cc" />
+    <ClCompile Include="bochs/iodev/pit.cc" />
+    <ClCompile Include="bochs/iodev/pit82c54.cc" />
+    <ClCompile Include="bochs/iodev/pit_wrap.cc" />
+    <ClCompile Include="bochs/iodev/sb16.cc" />
+    <ClCompile Include="bochs/iodev/soundwp.cc" />
+    <ClCompile Include="bochs/iodev/scancodes.cc" />
+    <ClCompile Include="bochs/iodev/slowdown_timer.cc" />
+    <ClCompile Include="bochs/iodev/unmapped.cc" />
+    <ClCompile Include="bochs/iodev/vga.cc" />
+    <ClCompile Include="bochs/logio.cc" />
+    <ClCompile Include="bochs/main.cc" />
+    <ClCompile Include="bochs/plugin.cc" />
+    <ClCompile Include="bochs/memory/memory.cc" />
+    <ClCompile Include="bochs/memory/misc_mem.cc" />
+    <ClCompile Include="bochs/osdep.cc" />
+    <ClCompile Include="bochs/pc_system.cc" />
+    <ClCompile Include="bochs/state_file.cc" />
+  </ItemGroup>
+
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+
+</Project>
+
+

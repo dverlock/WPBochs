@@ -1,0 +1,130 @@
+<Page
+    x:Class="WPBochs.EmulatorPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:WPBochs"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    Background="Black" Loaded="EmulatorPage_Loaded" Unloaded="EmulatorPage_Unloaded">
+
+    <Page.Resources>
+        <Style x:Key="TopBarIconBorderStyle" TargetType="Border">
+            <Setter Property="Width" Value="48"/>
+            <Setter Property="CornerRadius" Value="1"/>
+            <Setter Property="BorderBrush" Value="DarkGray"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Margin" Value="2"/>
+        </Style>
+        <Style x:Key="KeyButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="#55FFFFFF"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderBrush" Value="#88FFFFFF"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Margin" Value="1,1"/>
+            <Setter Property="Padding" Value="0"/>
+            <Setter Property="Width" Value="34"/>
+            <Setter Property="Height" Value="34"/>
+            <Setter Property="HorizontalContentAlignment" Value="Center"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="KeyRoot" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}">
+                            <VisualStateManager.VisualStateGroups>
+                                <VisualStateGroup x:Name="CommonStates">
+                                    <VisualState x:Name="Normal"/>
+                                    <VisualState x:Name="PointerOver">
+                                        <Storyboard>
+                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="KeyRoot" Storyboard.TargetProperty="Background">
+                                                <DiscreteObjectKeyFrame KeyTime="0" Value="#77FFFFFF"/>
+                                            </ObjectAnimationUsingKeyFrames>
+                                        </Storyboard>
+                                    </VisualState>
+                                    <VisualState x:Name="Pressed">
+                                        <Storyboard>
+                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="KeyRoot" Storyboard.TargetProperty="Background">
+                                                <DiscreteObjectKeyFrame KeyTime="0" Value="#AAFFFFFF"/>
+                                            </ObjectAnimationUsingKeyFrames>
+                                        </Storyboard>
+                                    </VisualState>
+                                    <VisualState x:Name="Disabled"/>
+                                </VisualStateGroup>
+                            </VisualStateManager.VisualStateGroups>
+                            <ContentPresenter Content="{TemplateBinding Content}" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Page.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="64"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <Grid Grid.Row="0" Background="#FF1E1E1E">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <Image Grid.Column="0" Source="Assets/ToolbarIcons/ips_speed.png" Width="28" Height="28" Margin="10,0,4,0" VerticalAlignment="Center"/>
+            <TextBlock x:Name="ipsText" Grid.Column="1" Text="0 IPS" Foreground="White" FontSize="20" VerticalAlignment="Center" Margin="0,0,10,0"/>
+
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Grid.Column="2">
+                <Border x:Name="mouseToggleButton" Style="{StaticResource TopBarIconBorderStyle}" Tapped="mouseToggleButton_Click" PointerPressed="ToolbarButton_PointerPressed" PointerReleased="ToolbarButton_PointerReleased" PointerExited="ToolbarButton_PointerReleased" PointerCanceled="ToolbarButton_PointerReleased">
+                    <Image x:Name="mouseToggleIcon" Source="Assets/ToolbarIcons/mouse_enabled.png" Width="28" Height="28"/>
+                </Border>
+
+                <Border x:Name="keyboardToggleButton" Style="{StaticResource TopBarIconBorderStyle}" Tapped="keyboardToggleButton_Click" PointerPressed="ToolbarButton_PointerPressed" PointerReleased="ToolbarButton_PointerReleased" PointerExited="ToolbarButton_PointerReleased" PointerCanceled="ToolbarButton_PointerReleased">
+                    <Image Source="Assets/ToolbarIcons/showkeyboard.png" Width="28" Height="28"/>
+                </Border>
+
+                <Border x:Name="logButton" Style="{StaticResource TopBarIconBorderStyle}" Tapped="logButton_Click" PointerPressed="ToolbarButton_PointerPressed" PointerReleased="ToolbarButton_PointerReleased" PointerExited="ToolbarButton_PointerReleased" PointerCanceled="ToolbarButton_PointerReleased">
+                    <Image Source="Assets/ToolbarIcons/debuglog.png" Width="28" Height="28"/>
+                </Border>
+
+                <Border x:Name="pauseButton" Style="{StaticResource TopBarIconBorderStyle}" Tapped="pauseButton_Click" PointerPressed="ToolbarButton_PointerPressed" PointerReleased="ToolbarButton_PointerReleased" PointerExited="ToolbarButton_PointerReleased" PointerCanceled="ToolbarButton_PointerReleased">
+                    <Image x:Name="pauseIcon" Source="Assets/ToolbarIcons/pause.png" Width="28" Height="28"/>
+                </Border>
+
+                <Border x:Name="resetButton" Style="{StaticResource TopBarIconBorderStyle}" Tapped="resetButton_Click" PointerPressed="ToolbarButton_PointerPressed" PointerReleased="ToolbarButton_PointerReleased" PointerExited="ToolbarButton_PointerReleased" PointerCanceled="ToolbarButton_PointerReleased">
+                    <Image Source="Assets/ToolbarIcons/reset.png" Width="28" Height="28"/>
+                </Border>
+
+                <Border x:Name="shutdownButton" Style="{StaticResource TopBarIconBorderStyle}" Margin="2,2,6,2" Tapped="shutdownButton_Click" PointerPressed="ToolbarButton_PointerPressed" PointerReleased="ToolbarButton_PointerReleased" PointerExited="ToolbarButton_PointerReleased" PointerCanceled="ToolbarButton_PointerReleased">
+                    <Image Source="Assets/ToolbarIcons/poweroff.png" Width="28" Height="28"/>
+                </Border>
+            </StackPanel>
+        </Grid>
+
+        <Grid x:Name="displaySurface" Grid.Row="1" Background="Black" PointerPressed="displaySurface_PointerPressed" PointerMoved="displaySurface_PointerMoved" PointerReleased="displaySurface_PointerReleased" PointerCaptureLost="displaySurface_PointerReleased">
+            <Image x:Name="displayImage" Stretch="Uniform" IsHitTestVisible="False"/>
+
+            <Border x:Name="keyboardOverlay" VerticalAlignment="Bottom" MaxHeight="300" Background="#B0000000" Visibility="Collapsed" Padding="6">
+                <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" HorizontalScrollMode="Enabled" VerticalScrollMode="Enabled">
+                    <StackPanel x:Name="keyboardStack" Orientation="Vertical" HorizontalAlignment="Center"/>
+                </ScrollViewer>
+            </Border>
+        </Grid>
+
+        <Popup x:Name="logPopup" IsLightDismissEnabled="True" Opened="logPopup_Opened">
+            <Border Background="#FF101010" BorderBrush="Gray" BorderThickness="1" Width="440" Height="260">
+                <Grid Margin="8">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+                    <TextBlock x:Name="logText" Grid.Row="0" Text="Bochs output" Foreground="White" FontSize="20" Margin="0,0,0,6"/>
+                    <RichEditBox x:Name="logTextBox" Grid.Row="1" IsReadOnly="True" AcceptsReturn="True" TextWrapping="Wrap" Background="Black" Foreground="White" ScrollViewer.VerticalScrollBarVisibility="Auto"/>
+                </Grid>
+            </Border>
+        </Popup>
+    </Grid>
+</Page>

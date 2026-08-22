@@ -1,0 +1,67 @@
+﻿<Page
+    x:Class="WPBochs.ImageCreator"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:WPBochs"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    Background="Black"
+    NavigationCacheMode="Required">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="64"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        <Grid Grid.Row="0" Background="#FF1E1E1E">
+            <Button x:Name="backButton" Content="← Back" Margin="10" HorizontalAlignment="Left" VerticalAlignment="Center" Click="backButton_Click"/>
+            <TextBlock Text="Image creator" Foreground="White" FontSize="24" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+        </Grid>
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <StackPanel Grid.Column="0" Margin="4">
+                    <TextBlock Text="Image type:" FontSize="18" Foreground="White"/>
+                    <RadioButton x:Name="floppyTypeRadio" Content="Floppy disk" FontSize="18" GroupName="ImageKind" IsChecked="True" Checked="ImageKindRadio_Checked"/>
+                    <RadioButton x:Name="hardDiskTypeRadio" Content="Hard disk" FontSize="18" GroupName="ImageKind" Checked="ImageKindRadio_Checked"/>
+                    <StackPanel x:Name="floppySizePanel">
+                        <TextBlock Text="Floppy size:" FontSize="18" Foreground="White"/>
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <RadioButton x:Name="floppy720Radio" Grid.Row="0" Grid.Column="0" Content="720 KB" FontSize="18" GroupName="FloppySize"/>
+                            <RadioButton x:Name="floppy12Radio" Grid.Row="0" Grid.Column="1" Content="1.2 MB" FontSize="18" GroupName="FloppySize"/>
+                            <RadioButton x:Name="floppy144Radio" Grid.Row="1" Grid.Column="0" Content="1.44 MB" FontSize="18" GroupName="FloppySize" IsChecked="True"/>
+                            <RadioButton x:Name="floppy288Radio" Grid.Row="1" Grid.Column="1" Content="2.88 MB" FontSize="18" GroupName="FloppySize"/>
+                        </Grid>
+                    </StackPanel>
+                    <StackPanel x:Name="hardDiskSizePanel" Visibility="Collapsed">
+                        <TextBlock Text="Hard disk size (MB):" FontSize="18" Foreground="White"/>
+                        <TextBox x:Name="hardDiskSizeBox" Text="504" PlaceholderText="e.g. 504" InputScope="Number"/>
+                    </StackPanel>
+                </StackPanel>
+                <StackPanel Grid.Column="1" Margin="4">
+                    <TextBlock Text="File name:" FontSize="18" Foreground="White"/>
+                    <TextBox x:Name="fileNameBox" Text="disk"/>
+                    <Button x:Name="createButton" Content="Create" HorizontalAlignment="Stretch" Click="createButton_Click"/>
+                    <TextBlock x:Name="errorText" Foreground="Red" FontSize="12" TextWrapping="Wrap"/>
+                </StackPanel>
+            </Grid>
+        </ScrollViewer>
+        <Border x:Name="progressOverlay" Grid.RowSpan="2" Background="#88000000" Visibility="Collapsed" IsHitTestVisible="True">
+            <StackPanel Width="320" HorizontalAlignment="Center" VerticalAlignment="Center">
+                <TextBlock x:Name="progressText" Text="Creating image..." Foreground="White" TextAlignment="Center"/>
+                <ProgressBar x:Name="progressBar" Minimum="0" Maximum="100" Value="0" Width="300"/>
+            </StackPanel>
+        </Border>
+    </Grid>
+</Page>

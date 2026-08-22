@@ -1,0 +1,125 @@
+﻿<Page
+    x:Class="WPBochs.MainPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:WPBochs"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    Background="Black"
+    NavigationCacheMode="Required">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="60"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        <Grid Grid.Row="0" Background="#FF1E1E1E">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="48"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="60"/>
+            </Grid.ColumnDefinitions>
+            <Image x:Name="logoImage" Grid.Row="0" Grid.Column="0" Height="48" Width="48" VerticalAlignment="Center" Source="Assets/Logo.png" Tapped="logoImage_Tapped"/>
+            <TextBlock x:Name="logoText" Grid.Row="0" Grid.Column="1" VerticalAlignment="Center" Text="WPBochs" FontSize="24"/>
+            <Image x:Name="startButton" Grid.Row="0" Grid.Column="2" Height="60" Width="60" VerticalAlignment="Top" Source="Assets/start.png" Tapped="startButton_Click" PointerPressed="startButton_PointerPressed" PointerReleased="startButton_PointerReleased" PointerCanceled="startButton_PointerReleased" PointerExited="startButton_PointerReleased"/>
+            <TextBlock x:Name="debugText" Grid.Row="0" Grid.ColumnSpan="3" Text="Debug (private) build. DO NOT REDISTRIBUTE!" TextAlignment="Center" FontSize="14" FontWeight="Bold" VerticalAlignment="Bottom" Margin="0,0,0,4" Opacity="0.7" Foreground="Red" Visibility="Collapsed"/>
+        </Grid>
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+            <Grid Margin="2">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+                <StackPanel Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" Margin="2">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0" Margin="2">
+                            <CheckBox x:Name="flpaCheck" Content="Floppy 0" HorizontalAlignment="Stretch" VerticalAlignment="Top" HorizontalContentAlignment="Center"/>
+                            <Button x:Name="flpaSelectButton" Content="Select" Click="flpaSelectButton_Click" HorizontalAlignment="Stretch"/>
+                            <TextBlock x:Name="flpaText" Text="none" TextWrapping="Wrap" FontSize="18" TextAlignment="Center"/>
+                        </StackPanel>
+                        <StackPanel Grid.Column="1" Margin="2">
+                            <CheckBox x:Name="flpbCheck" Content="Floppy 1" HorizontalContentAlignment="Center" HorizontalAlignment="Stretch"/>
+                            <Button x:Name="flpbSelectButton" Content="Select" Click="flpbSelectButton_Click" HorizontalAlignment="Stretch" VerticalAlignment="Top"/>
+                            <TextBlock x:Name="flpbText" Text="none" TextWrapping="Wrap" FontSize="18" TextAlignment="Center" VerticalAlignment="Top"/>
+                        </StackPanel>
+                    </Grid>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0" Margin="2">
+                            <CheckBox x:Name="hd0Check" Content="Hard disk 0" HorizontalContentAlignment="Center" HorizontalAlignment="Stretch"/>
+                            <Button x:Name="hd0SelectButton" Content="Select" Click="hd0SelectButton_Click" HorizontalAlignment="Stretch" VerticalAlignment="Top"/>
+                            <TextBlock x:Name="hd0Text" Text="none" TextWrapping="Wrap" FontSize="18" TextAlignment="Center" VerticalAlignment="Top"/>
+                        </StackPanel>
+                        <StackPanel Grid.Column="1" Margin="2">
+                            <CheckBox x:Name="hd1Check" Content="Hard disk 1" Checked="CdromCheck_Checked" HorizontalContentAlignment="Center" HorizontalAlignment="Stretch"/>
+                            <Button x:Name="hd1SelectButton" Content="Select" Click="hd1SelectButton_Click" HorizontalAlignment="Stretch" VerticalAlignment="Top"/>
+                            <TextBlock x:Name="hd1Text" Text="none" TextWrapping="Wrap" FontSize="18" TextAlignment="Center" VerticalAlignment="Top"/>
+                        </StackPanel>
+                    </Grid>
+                    <StackPanel Margin="2">
+                        <CheckBox x:Name="cdromCheck" Content="CDROM" Checked="CdromCheck_Checked" Unchecked="CdromCheck_Unchecked" HorizontalAlignment="Stretch" VerticalAlignment="Top" HorizontalContentAlignment="Center"/>
+                        <Button x:Name="cdromSelectButton" Content="Select" Click="cdromSelectButton_Click" HorizontalAlignment="Stretch" VerticalAlignment="Top"/>
+                        <TextBlock x:Name="cdromText" Text="none" TextWrapping="Wrap" FontSize="18" TextAlignment="Center" VerticalAlignment="Top"/>
+                    </StackPanel>
+                </StackPanel>
+                <StackPanel Grid.Row="1" Grid.Column="0" Margin="2">
+                    <CheckBox x:Name="mouseCheck" Content="Mouse support" IsChecked="True" HorizontalAlignment="Stretch"/>
+                    <CheckBox x:Name="i440fxCheck" Content="i440fx emulation" Checked="ExperimentalFeatureCheck_Checked" HorizontalAlignment="Stretch"/>
+                    <CheckBox x:Name="sb16Check" Content="Sound Blaster 16 emulation" Checked="ExperimentalFeatureCheck_Checked" HorizontalAlignment="Stretch"/>
+                    <CheckBox x:Name="fpuCheck" Content="FPU emulation" IsChecked="True" HorizontalAlignment="Stretch"/>
+                    <CheckBox x:Name="acpiCheck" Content="ACPI support" HorizontalAlignment="Stretch" Checked="ExperimentalFeatureCheck_Checked"/>
+                    <TextBlock Text="Keyboard type:" FontSize="18"/>
+                    <RadioButton x:Name="kbXtRadio" Content="xt" FontSize="18" GroupName="KeyboardType" HorizontalAlignment="Stretch" VerticalContentAlignment="Top" HorizontalContentAlignment="Center"/>
+                    <RadioButton x:Name="kbAtRadio" Content="at" FontSize="18" GroupName="KeyboardType" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
+                    <RadioButton x:Name="kbMfRadio" Content="mf" FontSize="18" GroupName="KeyboardType" IsChecked="True" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
+                </StackPanel>
+                <StackPanel Grid.Row="1" Grid.Column="1" Margin="2">
+                    <TextBlock Text="Boot from:" FontSize="18"/>
+                    <RadioButton x:Name="bootFloppyRadio" Content="floppy" FontSize="18" GroupName="BootFrom" IsChecked="True" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
+                    <RadioButton x:Name="bootHardRadio" Content="hard" FontSize="18" GroupName="BootFrom" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
+                    <RadioButton x:Name="bootCdromRadio" Content="cdrom" FontSize="18" GroupName="BootFrom" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
+                    <TextBlock x:Name="memoryText" Text="Memory:" FontSize="16" TextAlignment="Center"/>
+                    <Slider x:Name="memorySlider" Minimum="4" Value="32" Maximum="2048" SnapsTo="StepValues" StepFrequency="4" ValueChanged="memorySlider_ValueChanged"/>
+                    <TextBlock x:Name="memoryAmountText" Text="32 MB" FontSize="18" TextAlignment="Center" Tapped="memoryAmountText_Tapped"/>
+                    <Grid x:Name="memoryAmountGrid" Visibility="Collapsed">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="250"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBox x:Name="memoryAmountBox" Grid.Column="0" Text="32" VerticalAlignment="Center" LostFocus="memoryAmountBox_LostFocus" InputScope="Number" FontSize="24" MinHeight="40"/>
+                        <TextBlock Grid.Column="1" Text="MB" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="24"/>
+                    </Grid>
+                    <Button x:Name="imageCreatorButton" Content="Image creator" Click="imageCreatorButton_Click" HorizontalAlignment="Stretch" VerticalAlignment="Top"/>
+                    <Button x:Name="insertSampleButton" Content="Insert a demo FreeDOS floppy" Click="insertSampleButton_Click" HorizontalAlignment="Stretch"/>
+                </StackPanel>
+                <StackPanel Grid.Row="2" Margin="2" Grid.ColumnSpan="2">
+                    <CheckBox x:Name="newHDSupportCheck" Content="New hard drive support (Required for CDROM)"/>
+                    <CheckBox x:Name="slowdownTimerCheck" Content="Slowdown timer (Throttles internal clock)" IsChecked="False" Checked="ExperimentalFeatureCheck_Checked"/>
+                    <TextBlock Text="Emulated instructions per second (IPS):" FontSize="18"/>
+                    <TextBox x:Name="ipsBox" Text="10000000" InputScope="Number"/>
+                </StackPanel>
+            </Grid>
+        </ScrollViewer>
+        <Border x:Name="startingOverlay" Grid.RowSpan="2" Background="#88000000" Visibility="Collapsed" IsHitTestVisible="True">
+            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Orientation="Vertical">
+                <ProgressRing IsActive="True" Width="60" Height="60" Foreground="White"/>
+                <TextBlock x:Name="startLogText" Margin="0,12,0,0" Foreground="White" Text="Starting Bochs" TextAlignment="Center" HorizontalAlignment="Center"/>
+            </StackPanel>
+        </Border>
+    </Grid>
+</Page>
