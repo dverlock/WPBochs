@@ -2,6 +2,8 @@
 !/BochsEngine
 !/WPBochs
 !/.gitignore
+!/README.md
+!/LICENSE
 **/obj/
 **/bin/
 **/ARM/
