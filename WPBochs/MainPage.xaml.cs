@@ -20,7 +20,7 @@ namespace WPBochs
     public sealed partial class MainPage : Page
     {
         private const string BiosFileName = "BIOS-bochs-latest", AcpiBiosFileName = "BIOS-bochs-acpi", VgaBiosFileName = "VGABIOS-lgpl-latest", DemoFloppyFileName = "wpbfdos.img";
-        private bool _memoryWarningShown, _loadingSettings;
+        private bool _memoryWarningShown, _loadingSettings, _experimentalDialogShowing;
         private StorageFile _flpaFile, _flpbFile, _hd0File, _hd1File, _cdromFile;
         int lastMemorySliderValue;
 
@@ -95,10 +95,18 @@ namespace WPBochs
 
         private async void ExperimentalFeatureCheck_Checked(object sender, RoutedEventArgs e)
         {
-            if (_loadingSettings) return;
-            MessageDialog dialog = new MessageDialog("Please note that this feature is experimental and can lead to unexpected Bochs behaviour or crashing/panicking.", "Experimental Feature");
-            dialog.Commands.Add(new UICommand("OK"));
-            await dialog.ShowAsync();
+            if (_loadingSettings || _experimentalDialogShowing) return;
+            _experimentalDialogShowing = true;
+            try
+            {
+                MessageDialog dialog = new MessageDialog("Please note that this feature is experimental and can lead to unexpected Bochs behaviour or crashing/panicking.", "Experimental Feature");
+                dialog.Commands.Add(new UICommand("OK"));
+                await dialog.ShowAsync();
+            }
+            finally
+            {
+                _experimentalDialogShowing = false;
+            }
         }
 
         private void SaveSettings()
