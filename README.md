@@ -10,10 +10,13 @@ WPBochs is a port of [Bochs](https://bochs.sourceforge.io/), the x86 emulator, f
 ---
 ### Download
 Get the latest version APPX in the Releases tab. It can be installed from both Windows Phone Application Deployment and CMD Injector.
+
 **Please note that WPBochs depends on VCLibs 12.00. Install them before installing WPBochs.**
+
 You can also get it from Live Store:
 
 [![Get WPBochs from Live Store](https://edge.live.net.co/images/store/2025_GetButton_SmallBlack.png)](https://store.live.net.co/app/720)
+
 or from my webpage: http://dverlock.top/wpbochs.
 
 ---
@@ -34,6 +37,7 @@ Download the source code as a zip or a tar.gz file, extract it to any folder and
 ### FAQ
 #### I can't install the app, it fails with an error. How to fix it?
 Try installing VCLibs 12.00. You can find it online or download directly on [my webpage](http://dverlock.top/wpbochs/vclibs12.appx). If you still can't install it, check if you are running WP8.1 or higher*. WPBochs is not installable on Windows Phone 8.0 or 7.x.
+
 ***WPBochs was not tested under Windows 10 Mobile.**
 #### Why is emulation so slow?
 Bochs itself is a *pure interpreter* of x86 code, which can be very slow depending on what architecture and clock speed of the host CPU you are using. In Windows Phone's case, it's an ARM processor with usually a low clock speed, so Bochs will run at about a speed of a Pentium 1 in a best case scenario.
@@ -50,6 +54,9 @@ You can open an issue [here](https://github.com/dverlock/WPBochs/issues). I will
 ### Credits
 Thanks to:
 **The Bochs Project (MandrakeSoft)** - for the main emulator;
+
 **The v86 project (copy.sh/v86)** - for the source of the FreeDOS floppy used as a demo image in WPBochs;
+
 **dverlock (me)** - for porting Bochs to Windows Phone;
+
 **You - for using WPBochs.**
