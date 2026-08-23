@@ -34,4 +34,5 @@ ipch/
 *.opendb
 *.db
 *.VC.db
-*.VC.VC.opendb
+*.VC.VC.opendb
+*.i
