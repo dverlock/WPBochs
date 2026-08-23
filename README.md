@@ -3,11 +3,9 @@
 
 WPBochs is a port of [Bochs](https://bochs.sourceforge.io/), the x86 emulator, for Windows Phone 8.1, bringing the ability to run older Windows, MS-/FreeDOS and Linux. It features emulating an FPU, Sound Blaster 16 sound card, CDROM, and much more. You can also create floppy/hard disk images directly inside WPBochs through its Image creator. If you have no images to test WPBochs on, there already is a built-in demo floppy drive with FreeDOS and some freeware games on it.
 ### Screenshots
-<img src="http://dverlock.top/wpbochs/wpbscreen1.png" alt="Screenshot 1" width="30%">
-
-<img src="http://dverlock.top/wpbochs/wpbscreen2.png" alt="Screenshot 2" width="30%">
-
-<img src="http://dverlock.top/wpbochs/wpbscreen3.png" alt="Screenshot 3" width="30%">
+<img src="http://dverlock.top/wpbochs/wpbscreen1.png" alt="Screenshot 1" width="25%">
+<img src="http://dverlock.top/wpbochs/wpbscreen2.png" alt="Screenshot 2" width="25%">
+<img src="http://dverlock.top/wpbochs/wpbscreen3.png" alt="Screenshot 3" width="25%">
 
 ---
 ### Download
