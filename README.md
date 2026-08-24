@@ -53,7 +53,7 @@ If you're trying to install WPBochs on Windows 10 Mobile, it will fail with an e
 
 > **Note: WPBochs was not tested under Windows 10 Mobile.**
 #### Why is emulation so slow?
-Bochs itself is a *pure software interpreter* of x86 code, which can be very slow depending on what architecture and clock speed of the host CPU you are using. In Windows Phone's case, it's an ARM processor with usually a low clock speed, so Bochs will run at about a speed of a Pentium 1 in the best-case scenario.
+Bochs itself is a *pure software interpreter* of x86 code, which can be very slow depending on what architecture and clock speed of the host CPU you are using. In Windows Phone's case, it's an ARM processor with usually a low clock speed, so Bochs will run at about a speed of a Pentium 1 in a best-case scenario.
 #### Bochs hangs on a black screen at startup. How to fix this?
 There might be two solutions to your problem:
  - **Turn off ACPI emulation.** At this moment its emulation is extremely limited and some ACPI-based systems hang and refuse to boot while trying to access ACPI features.
