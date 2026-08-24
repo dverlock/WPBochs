@@ -39,7 +39,11 @@ or from my webpage: http://dverlock.top/wpbochs.
  - i440fx emulation (experimental)
  - ACPI emulation (extremely experimental and limited)
  - Creating hard/floppy disk images inside WPBochs
- - Slowdown timer (throttles clock to real-time speed)
+ - Slowdown timer (throttles internal clock to real-time speed)
+---
+### Known issues
+ - Opening/closing in-app log freezes the whole app for a couple of seconds on lower-end devices
+
 ---
 ### FAQ
 #### I can't install WPBochs, it fails with an error. How to fix it?
