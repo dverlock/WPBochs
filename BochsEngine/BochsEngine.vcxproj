@@ -1,6 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
       <Configuration>Debug</Configuration>
@@ -19,7 +18,6 @@
       <Platform>ARM</Platform>
     </ProjectConfiguration>
   </ItemGroup>
-
   <PropertyGroup Label="Globals">
     <ProjectGuid>{09d3c23a-655d-42b6-8f06-7d49b19512d7}</ProjectGuid>
     <Keyword>WindowsRuntimeComponent</Keyword>
@@ -31,9 +29,7 @@
     <ApplicationType>Windows Phone</ApplicationType>
     <ApplicationTypeRevision>8.1</ApplicationTypeRevision>
   </PropertyGroup>
-
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
-
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
@@ -56,40 +52,29 @@
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <PlatformToolset>v120_wp81</PlatformToolset>
   </PropertyGroup>
-
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
-
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
-
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
-
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
-
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
-
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup />
-
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
   </PropertyGroup>
-
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
   </PropertyGroup>
-
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">
   </PropertyGroup>
-
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">
   </PropertyGroup>
-
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
@@ -106,7 +91,6 @@
       <AdditionalDependencies>xaudio2.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
-
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
@@ -121,9 +105,9 @@
       <SubSystem>Console</SubSystem>
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
       <AdditionalDependencies>xaudio2.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
     </Link>
   </ItemDefinitionGroup>
-
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">
     <ClCompile>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
@@ -140,7 +124,6 @@
       <AdditionalDependencies>xaudio2.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
-
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">
     <ClCompile>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
@@ -155,16 +138,15 @@
       <SubSystem>Console</SubSystem>
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
       <AdditionalDependencies>xaudio2.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
     </Link>
   </ItemDefinitionGroup>
-
   <ItemGroup>
     <ClInclude Include="pch.h" />
     <ClInclude Include="BochsMachine.h" />
     <ClInclude Include="wpb_file_io_internal.h" />
     <ClInclude Include="bochs\wpb_file_io.h" />
   </ItemGroup>
-
   <ItemGroup>
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
@@ -190,7 +172,6 @@
       <CompileAsWinRT>true</CompileAsWinRT>
     </ClCompile>
   </ItemGroup>
-
   <ItemGroup>
     <ClCompile Include="bochs/cpu/access.cc" />
     <ClCompile Include="bochs/cpu/arith16.cc" />
@@ -251,40 +232,108 @@
       <ObjectFileName>$(IntDir)cpu_fpu.obj</ObjectFileName>
     </ClCompile>
     <ClCompile Include="bochs/fpu/wmFPUemu_glue.cc" />
-    <ClCompile Include="bochs/fpu/div_Xsig.c"><CompileAs>CompileAsC</CompileAs></ClCompile>
-    <ClCompile Include="bochs/fpu/errors.c"><CompileAs>CompileAsC</CompileAs></ClCompile>
-    <ClCompile Include="bochs/fpu/fpu_arith.c"><CompileAs>CompileAsC</CompileAs></ClCompile>
-    <ClCompile Include="bochs/fpu/fpu_aux.c"><CompileAs>CompileAsC</CompileAs></ClCompile>
-    <ClCompile Include="bochs/fpu/fpu_entry.c"><CompileAs>CompileAsC</CompileAs></ClCompile>
-    <ClCompile Include="bochs/fpu/fpu_etc.c"><CompileAs>CompileAsC</CompileAs></ClCompile>
-    <ClCompile Include="bochs/fpu/fpu_compare.c"><CompileAs>CompileAsC</CompileAs></ClCompile>
-    <ClCompile Include="bochs/fpu/fpu_tags.c"><CompileAs>CompileAsC</CompileAs></ClCompile>
-    <ClCompile Include="bochs/fpu/fpu_trig.c"><CompileAs>CompileAsC</CompileAs></ClCompile>
-    <ClCompile Include="bochs/fpu/load_store.c"><CompileAs>CompileAsC</CompileAs></ClCompile>
-    <ClCompile Include="bochs/fpu/mul_Xsig.c"><CompileAs>CompileAsC</CompileAs></ClCompile>
-    <ClCompile Include="bochs/fpu/poly_2xm1.c"><CompileAs>CompileAsC</CompileAs></ClCompile>
-    <ClCompile Include="bochs/fpu/poly_atan.c"><CompileAs>CompileAsC</CompileAs></ClCompile>
-    <ClCompile Include="bochs/fpu/poly_l2.c"><CompileAs>CompileAsC</CompileAs></ClCompile>
-    <ClCompile Include="bochs/fpu/poly_sin.c"><CompileAs>CompileAsC</CompileAs></ClCompile>
-    <ClCompile Include="bochs/fpu/poly_tan.c"><CompileAs>CompileAsC</CompileAs></ClCompile>
-    <ClCompile Include="bochs/fpu/polynom_Xsig.c"><CompileAs>CompileAsC</CompileAs></ClCompile>
-    <ClCompile Include="bochs/fpu/reg_add_sub.c"><CompileAs>CompileAsC</CompileAs></ClCompile>
-    <ClCompile Include="bochs/fpu/reg_compare.c"><CompileAs>CompileAsC</CompileAs></ClCompile>
-    <ClCompile Include="bochs/fpu/reg_constant.c"><CompileAs>CompileAsC</CompileAs></ClCompile>
-    <ClCompile Include="bochs/fpu/reg_convert.c"><CompileAs>CompileAsC</CompileAs></ClCompile>
-    <ClCompile Include="bochs/fpu/reg_divide.c"><CompileAs>CompileAsC</CompileAs></ClCompile>
-    <ClCompile Include="bochs/fpu/reg_ld_str.c"><CompileAs>CompileAsC</CompileAs></ClCompile>
-    <ClCompile Include="bochs/fpu/reg_mul.c"><CompileAs>CompileAsC</CompileAs></ClCompile>
-    <ClCompile Include="bochs/fpu/reg_norm.c"><CompileAs>CompileAsC</CompileAs></ClCompile>
-    <ClCompile Include="bochs/fpu/reg_round.c"><CompileAs>CompileAsC</CompileAs></ClCompile>
-    <ClCompile Include="bochs/fpu/reg_u_add.c"><CompileAs>CompileAsC</CompileAs></ClCompile>
-    <ClCompile Include="bochs/fpu/reg_u_div.c"><CompileAs>CompileAsC</CompileAs></ClCompile>
-    <ClCompile Include="bochs/fpu/reg_u_mul.c"><CompileAs>CompileAsC</CompileAs></ClCompile>
-    <ClCompile Include="bochs/fpu/reg_u_sub.c"><CompileAs>CompileAsC</CompileAs></ClCompile>
-    <ClCompile Include="bochs/fpu/round_Xsig.c"><CompileAs>CompileAsC</CompileAs></ClCompile>
-    <ClCompile Include="bochs/fpu/shr_Xsig.c"><CompileAs>CompileAsC</CompileAs></ClCompile>
-    <ClCompile Include="bochs/fpu/wm_shrx.c"><CompileAs>CompileAsC</CompileAs></ClCompile>
-    <ClCompile Include="bochs/fpu/wm_sqrt.c"><CompileAs>CompileAsC</CompileAs></ClCompile>
+    <ClCompile Include="bochs/fpu/div_Xsig.c">
+      <CompileAs>CompileAsC</CompileAs>
+    </ClCompile>
+    <ClCompile Include="bochs/fpu/errors.c">
+      <CompileAs>CompileAsC</CompileAs>
+    </ClCompile>
+    <ClCompile Include="bochs/fpu/fpu_arith.c">
+      <CompileAs>CompileAsC</CompileAs>
+    </ClCompile>
+    <ClCompile Include="bochs/fpu/fpu_aux.c">
+      <CompileAs>CompileAsC</CompileAs>
+    </ClCompile>
+    <ClCompile Include="bochs/fpu/fpu_entry.c">
+      <CompileAs>CompileAsC</CompileAs>
+    </ClCompile>
+    <ClCompile Include="bochs/fpu/fpu_etc.c">
+      <CompileAs>CompileAsC</CompileAs>
+    </ClCompile>
+    <ClCompile Include="bochs/fpu/fpu_compare.c">
+      <CompileAs>CompileAsC</CompileAs>
+    </ClCompile>
+    <ClCompile Include="bochs/fpu/fpu_tags.c">
+      <CompileAs>CompileAsC</CompileAs>
+    </ClCompile>
+    <ClCompile Include="bochs/fpu/fpu_trig.c">
+      <CompileAs>CompileAsC</CompileAs>
+    </ClCompile>
+    <ClCompile Include="bochs/fpu/load_store.c">
+      <CompileAs>CompileAsC</CompileAs>
+    </ClCompile>
+    <ClCompile Include="bochs/fpu/mul_Xsig.c">
+      <CompileAs>CompileAsC</CompileAs>
+    </ClCompile>
+    <ClCompile Include="bochs/fpu/poly_2xm1.c">
+      <CompileAs>CompileAsC</CompileAs>
+    </ClCompile>
+    <ClCompile Include="bochs/fpu/poly_atan.c">
+      <CompileAs>CompileAsC</CompileAs>
+    </ClCompile>
+    <ClCompile Include="bochs/fpu/poly_l2.c">
+      <CompileAs>CompileAsC</CompileAs>
+    </ClCompile>
+    <ClCompile Include="bochs/fpu/poly_sin.c">
+      <CompileAs>CompileAsC</CompileAs>
+    </ClCompile>
+    <ClCompile Include="bochs/fpu/poly_tan.c">
+      <CompileAs>CompileAsC</CompileAs>
+    </ClCompile>
+    <ClCompile Include="bochs/fpu/polynom_Xsig.c">
+      <CompileAs>CompileAsC</CompileAs>
+    </ClCompile>
+    <ClCompile Include="bochs/fpu/reg_add_sub.c">
+      <CompileAs>CompileAsC</CompileAs>
+    </ClCompile>
+    <ClCompile Include="bochs/fpu/reg_compare.c">
+      <CompileAs>CompileAsC</CompileAs>
+    </ClCompile>
+    <ClCompile Include="bochs/fpu/reg_constant.c">
+      <CompileAs>CompileAsC</CompileAs>
+    </ClCompile>
+    <ClCompile Include="bochs/fpu/reg_convert.c">
+      <CompileAs>CompileAsC</CompileAs>
+    </ClCompile>
+    <ClCompile Include="bochs/fpu/reg_divide.c">
+      <CompileAs>CompileAsC</CompileAs>
+    </ClCompile>
+    <ClCompile Include="bochs/fpu/reg_ld_str.c">
+      <CompileAs>CompileAsC</CompileAs>
+    </ClCompile>
+    <ClCompile Include="bochs/fpu/reg_mul.c">
+      <CompileAs>CompileAsC</CompileAs>
+    </ClCompile>
+    <ClCompile Include="bochs/fpu/reg_norm.c">
+      <CompileAs>CompileAsC</CompileAs>
+    </ClCompile>
+    <ClCompile Include="bochs/fpu/reg_round.c">
+      <CompileAs>CompileAsC</CompileAs>
+    </ClCompile>
+    <ClCompile Include="bochs/fpu/reg_u_add.c">
+      <CompileAs>CompileAsC</CompileAs>
+    </ClCompile>
+    <ClCompile Include="bochs/fpu/reg_u_div.c">
+      <CompileAs>CompileAsC</CompileAs>
+    </ClCompile>
+    <ClCompile Include="bochs/fpu/reg_u_mul.c">
+      <CompileAs>CompileAsC</CompileAs>
+    </ClCompile>
+    <ClCompile Include="bochs/fpu/reg_u_sub.c">
+      <CompileAs>CompileAsC</CompileAs>
+    </ClCompile>
+    <ClCompile Include="bochs/fpu/round_Xsig.c">
+      <CompileAs>CompileAsC</CompileAs>
+    </ClCompile>
+    <ClCompile Include="bochs/fpu/shr_Xsig.c">
+      <CompileAs>CompileAsC</CompileAs>
+    </ClCompile>
+    <ClCompile Include="bochs/fpu/wm_shrx.c">
+      <CompileAs>CompileAsC</CompileAs>
+    </ClCompile>
+    <ClCompile Include="bochs/fpu/wm_sqrt.c">
+      <CompileAs>CompileAsC</CompileAs>
+    </ClCompile>
     <ClCompile Include="bochs/gui/control.cc" />
     <ClCompile Include="bochs/gui/gui.cc" />
     <ClCompile Include="bochs/gui/keymap.cc" />
@@ -325,12 +374,7 @@
     <ClCompile Include="bochs/pc_system.cc" />
     <ClCompile Include="bochs/state_file.cc" />
   </ItemGroup>
-
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
-
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
-
 </Project>
-
-
