@@ -23,8 +23,8 @@ or from my webpage: https://dverlock.top/wpbochs.
 ---
 ### How to build
 1. Download the source code as a zip archive (green Code button -> Download ZIP), or clone into the repository: `git clone https://github.com/dverlock/WPBochs.git`.
-2. Extract the archive to any folder.
-3. Open the WPBochs.sln file using Visual Studio 2015 with Windows Phone 8.1 SDK installed.
+2. Extract the archive into any folder.
+3. Open the `WPBochs.sln` file using Visual Studio 2015 with Windows Phone 8.1 SDK installed.
 4. Right-click the WPBochs project in the Solution Explorer and click on Store -> Create App Packages...
 5. Select No on the first page, click Next.
 6. On the second page, set Generate app bundle to Never, choose the required architecture you want (either x86 or ARM, choose only one), set Solution Configuration to Release and click Create.
