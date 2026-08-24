@@ -1,9 +1,9 @@
-![WPBochs logo](http://dverlock.top/wpbochs/wpbochslogo.png)
+![WPBochs logo](https://dverlock.top/wpbochs/wpbochslogo.png)
 ---
 WPBochs is a port of [Bochs](https://bochs.sourceforge.io/), the x86 emulator, for Windows Phone 8.1, bringing the ability to run older versions of Windows, MS-DOS/FreeDOS and Linux to Windows Phones. It features emulating an FPU, Sound Blaster 16 sound card, CD-ROM drive, and much more. You can also create floppy/hard disk images directly inside WPBochs through its Image creator. If you have no images to test WPBochs on, there already is a built-in demo floppy drive with FreeDOS and some freeware games on it.
 > **Note: Bochs is not affiliated with Microsoft.**
 ### Screenshots
-| <img src="http://dverlock.top/wpbochs/wpbscreen1.png" alt="Screenshot 1" width="260"> | <img src="http://dverlock.top/wpbochs/wpbscreen2.png" alt="Screenshot 2" width="260"> | <img src="http://dverlock.top/wpbochs/wpbscreen3.png" alt="Screenshot 3" width="260"> |
+| <img src="https://dverlock.top/wpbochs/wpbscreen1.png" alt="Screenshot 1" width="260"> | <img src="https://dverlock.top/wpbochs/wpbscreen2.png" alt="Screenshot 2" width="260"> | <img src="https://dverlock.top/wpbochs/wpbscreen3.png" alt="Screenshot 3" width="260"> |
 |:---:|:---:|:---:|
 
 ---
@@ -18,7 +18,7 @@ You can also get it from Live Store:
 
 [![Get WPBochs from Live Store](https://edge.live.net.co/images/store/2025_GetButton_SmallBlack.png)](https://store.live.net.co/app/720)
 
-or from my webpage: http://dverlock.top/wpbochs.
+or from my webpage: https://dverlock.top/wpbochs.
 
 ---
 ### How to build
@@ -47,7 +47,7 @@ or from my webpage: http://dverlock.top/wpbochs.
 ---
 ### FAQ
 #### I can't install WPBochs, it fails with an error. How to fix it?
-Try installing VCLibs 12.00. You can find it online or download directly on [my webpage](http://dverlock.top/wpbochs/vclibs12.appx). If you still can't install WPBochs, check if you are running WP8.1 or higher. WPBochs is not installable on Windows Phone 8.0 or 7.x.
+Try installing VCLibs 12.00. You can find it online or download directly on [my webpage](https://dverlock.top/wpbochs/vclibs12.appx). If you still can't install WPBochs, check if you are running WP8.1 or higher. WPBochs is not installable on Windows Phone 8.0 or 7.x.
 
 If you're trying to install WPBochs on Windows 10 Mobile, it will fail with an error about an untrusted certificate. Because of that, on Windows 10 Mobile WPBochs could only be installed through CMD Injector.
 
