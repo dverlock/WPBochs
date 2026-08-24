@@ -3,7 +3,7 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 [assembly: AssemblyTitle("WPBochs")]
-[assembly: AssemblyDescription("Bohs port for Windows Phone 8.1")]
+[assembly: AssemblyDescription("Bochs port for Windows Phone 8.1")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("dverlock")]
 [assembly: AssemblyProduct("WPBochs")]
