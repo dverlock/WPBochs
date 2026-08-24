@@ -42,7 +42,7 @@ or from my webpage: https://dverlock.top/wpbochs.
  - Slowdown timer (throttles internal clock to real-time speed)
 ---
 ### Known issues
- - Opening/closing in-app log freezes the whole app for a couple of seconds on lower-end devices
+ - Opening/closing in-app log freezes the whole app for a couple of seconds on low-end devices
 
 ---
 ### FAQ
