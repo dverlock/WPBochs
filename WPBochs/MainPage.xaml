@@ -72,7 +72,7 @@
                         </StackPanel>
                     </Grid>
                     <StackPanel Margin="2">
-                        <CheckBox x:Name="cdromCheck" Content="CDROM" Checked="CdromCheck_Checked" Unchecked="CdromCheck_Unchecked" HorizontalAlignment="Stretch" VerticalAlignment="Top" HorizontalContentAlignment="Center"/>
+                        <CheckBox x:Name="cdromCheck" Content="CD-ROM" Checked="CdromCheck_Checked" Unchecked="CdromCheck_Unchecked" HorizontalAlignment="Stretch" VerticalAlignment="Top" HorizontalContentAlignment="Center"/>
                         <Button x:Name="cdromSelectButton" Content="Select" Click="cdromSelectButton_Click" HorizontalAlignment="Stretch" VerticalAlignment="Top"/>
                         <TextBlock x:Name="cdromText" Text="none" TextWrapping="Wrap" FontSize="18" TextAlignment="Center" VerticalAlignment="Top"/>
                     </StackPanel>

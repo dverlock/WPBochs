@@ -21,6 +21,7 @@ void SetMouseEnabled(bool enabled);
 
 void RequestReset();
 void RequestShutdown();
+void ShutdownNow();
 
 void RequestPause(bool paused);
 

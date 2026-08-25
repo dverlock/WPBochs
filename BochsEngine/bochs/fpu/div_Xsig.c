@@ -61,7 +61,7 @@ void div_Xsig(const Xsig *aa, const Xsig *b, Xsig *dest)
   den = b->msw + 1;
   if ( den )
     {
-      result.msw = num / den;
+      result.msw = (u32)(num / den);
     }
   else
     result.msw = a.msw;
@@ -114,15 +114,15 @@ void div_Xsig(const Xsig *aa, const Xsig *b, Xsig *dest)
 
   if ( den )
     {
-      result.midw = num / den;
+      result.midw = (u32)(num / den);
     }
   else
     result.midw = a.midw;
 
   prod = result.midw;
   prod *= b->msw;
-  a.midw -= prod >> 32;
-  prodl = prod;
+  a.midw -= (u32)(prod >> 32);
+  prodl = (u32)prod;
   wd = a.lsw;
   a.lsw -= prodl;
   if ( a.lsw > wd )
@@ -160,14 +160,14 @@ void div_Xsig(const Xsig *aa, const Xsig *b, Xsig *dest)
 
   if ( den )
     {
-      result.lsw = num / den;
+      result.lsw = (u32)(num / den);
     }
   else
     result.lsw = a.lsw;
 
   prod = result.lsw;
   prod *= b->msw;
-  a.lsw -= prod >> 32;
+  a.lsw -= (u32)(prod >> 32);
 
 #ifdef PARANOID
   if ( a.lsw > 2 )

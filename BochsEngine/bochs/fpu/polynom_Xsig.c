@@ -34,8 +34,8 @@ void polynomial_Xsig(Xsig *accum, const u64 *x, const u64 terms[], const int n)
   xlwr = (u32)(*x);
   xupr = (u32)((*x) >> 32);
 
-  acc.msw = terms[n] >> 32;
-  acc.midw = terms[n];
+  acc.msw = (u32)(terms[n] >> 32);
+  acc.midw = (u32)terms[n];
   acc.lsw = 0;
   overflowed = 0;
 
@@ -45,34 +45,34 @@ void polynomial_Xsig(Xsig *accum, const u64 *x, const u64 terms[], const int n)
 
       /* first word by first word */
       prod = acc.msw * xupr;
-      Xprod.midw = prod;
-      Xprod.msw = prod >> 32;
+      Xprod.midw = (u32)prod;
+      Xprod.msw = (u32)(prod >> 32);
 
       /* first word by second word */
       prod = acc.msw * xlwr;
-      Xprod.lsw = prod;
-      lprod = prod >> 32;
+      Xprod.lsw = (u32)prod;
+      lprod = (u32)(prod >> 32);
       Xprod.midw += lprod;
       if ( lprod > Xprod.midw )
 	Xprod.msw ++;
 
       /* second word by first word */
       prod = acc.midw * xupr;
-      Xprod.lsw += prod;
+      Xprod.lsw += (u32)prod;
       if ( (u32)prod > Xprod.lsw )
 	{
 	  Xprod.midw ++;
 	  if ( Xprod.midw == 0 )
 	    Xprod.msw ++;
 	}
-      lprod = prod >> 32;
+      lprod = (u32)(prod >> 32);
       Xprod.midw += lprod;
       if ( lprod > Xprod.midw )
 	Xprod.msw ++;
 
       /* second word by second word */
       prod = acc.midw * xlwr;
-      lprod = prod >> 32;
+      lprod = (u32)(prod >> 32);
       Xprod.lsw += lprod;
       if ( lprod > Xprod.lsw )
 	{
@@ -83,7 +83,7 @@ void polynomial_Xsig(Xsig *accum, const u64 *x, const u64 terms[], const int n)
 
       /* third word by first word */
       prod = acc.lsw * xupr;
-      lprod = prod >> 32;
+      lprod = (u32)(prod >> 32);
       Xprod.lsw += lprod;
       if ( lprod > Xprod.lsw )
 	{
@@ -94,16 +94,16 @@ void polynomial_Xsig(Xsig *accum, const u64 *x, const u64 terms[], const int n)
 
       if ( overflowed )
 	{
-	  Xprod.midw += xlwr;
+	  Xprod.midw += (u32)xlwr;
 	  if ( (u32)xlwr > Xprod.midw )
 	    Xprod.msw ++;
-	  Xprod.msw += xupr;
+	  Xprod.msw += (u32)xupr;
 	  overflowed = 0;    /* We don't check this addition for overflow */
 	}
       
       acc.lsw = Xprod.lsw;
       acc.midw = (u32)terms[i] + Xprod.midw;
-      acc.msw = (terms[i] >> 32) + Xprod.msw;
+      acc.msw = (u32)(terms[i] >> 32) + Xprod.msw;
       if ( Xprod.msw > acc.msw )
 	overflowed = 1;
       if ( (u32)terms[i] > acc.midw )

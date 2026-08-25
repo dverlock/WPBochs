@@ -14,6 +14,7 @@ using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
 using Windows.System;
 using Windows.Storage.FileProperties;
+using Windows.Storage.Streams;
 
 namespace WPBochs
 {
@@ -209,7 +210,7 @@ namespace WPBochs
 
         private void flpaSelectButton_Click(object sender, RoutedEventArgs e) => OpenFilePicker(new string[] { ".img", ".ima" }, "filetype", "flp0");
 
-        public void ContinueFileOpenPicker(FileOpenPickerContinuationEventArgs args)
+        public async void ContinueFileOpenPicker(FileOpenPickerContinuationEventArgs args)
         {
             if (args.Files.Count == 0) return;
             StorageFile file = args.Files.FirstOrDefault();
@@ -227,11 +228,25 @@ namespace WPBochs
                     StorageApplicationPermissions.FutureAccessList.AddOrReplace("flpb", file);
                     break;
                 case "hd0":
+                    if (file.FileType.Equals(".vmdk", StringComparison.OrdinalIgnoreCase) && !await IsSupportedVmdkAsync(file))
+                    {
+                        MessageDialog messageDialog = new MessageDialog("WPBochs currently only supports VMware 3 COW disk and VMware 4+ sparse disk format .vmdk files.", "Unsupported VMDK format");
+                        messageDialog.Commands.Add(new UICommand("OK"));
+                        await messageDialog.ShowAsync();
+                        return;
+                    }
                     _hd0File = file;
                     hd0Text.Text = file.Name;
                     StorageApplicationPermissions.FutureAccessList.AddOrReplace("hd0", file);
                     break;
                 case "hd1":
+                    if (file.FileType.Equals(".vmdk", StringComparison.OrdinalIgnoreCase) && !await IsSupportedVmdkAsync(file))
+                    {
+                        MessageDialog messageDialog = new MessageDialog("WPBochs currently only supports VMware 3 COW disk and VMware 4+ sparse disk format .vmdk files.", "Unsupported VMDK format");
+                        messageDialog.Commands.Add(new UICommand("OK"));
+                        await messageDialog.ShowAsync();
+                        return;
+                    }
                     _hd1File = file;
                     hd1Text.Text = file.Name;
                     StorageApplicationPermissions.FutureAccessList.AddOrReplace("hd1", file);
@@ -278,9 +293,24 @@ namespace WPBochs
 
         private void flpbSelectButton_Click(object sender, RoutedEventArgs e) => OpenFilePicker(new string[] { ".img", ".ima" }, "filetype", "flp1");
 
-        private void hd0SelectButton_Click(object sender, RoutedEventArgs e) => OpenFilePicker(new string[] { ".img" }, "filetype", "hd0");
+        private void hd0SelectButton_Click(object sender, RoutedEventArgs e) => OpenFilePicker(new string[] { ".img", ".vmdk" }, "filetype", "hd0");
 
-        private void hd1SelectButton_Click(object sender, RoutedEventArgs e) => OpenFilePicker(new string[] { ".img" }, "filetype", "hd1");
+        private void hd1SelectButton_Click(object sender, RoutedEventArgs e) => OpenFilePicker(new string[] { ".img", ".vmdk" }, "filetype", "hd1");
+
+        private static async Task<bool> IsSupportedVmdkAsync(StorageFile file)
+        {
+            using (IRandomAccessStream stream = await file.OpenAsync(FileAccessMode.Read))
+            using (DataReader reader = new DataReader(stream))
+            {
+                await reader.LoadAsync(4);
+                if (reader.UnconsumedBufferLength < 4) return false;
+                byte[] magic = new byte[4];
+                reader.ReadBytes(magic);
+                bool isVmware3 = magic[0] == (byte)'C' && magic[1] == (byte)'O' && magic[2] == (byte)'W' && magic[3] == (byte)'D';
+                bool isVmware4 = magic[0] == (byte)'K' && magic[1] == (byte)'D' && magic[2] == (byte)'M' && magic[3] == (byte)'V';
+                return isVmware3 || isVmware4;
+            }
+        }
 
         private void cdromSelectButton_Click(object sender, RoutedEventArgs e) => OpenFilePicker(new string[] { ".iso" }, "filetype", "cdrom");
 

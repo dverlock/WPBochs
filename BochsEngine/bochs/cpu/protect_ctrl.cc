@@ -820,7 +820,7 @@ BX_CPU_C::LGDT_Ms(bxInstruction_c *i)
     read_virtual_qword(i->seg(), RMAddr(i) + 2, &base_64);
 
     BX_CPU_THIS_PTR gdtr.limit = limit_16;
-    BX_CPU_THIS_PTR gdtr.base = base_64;
+    BX_CPU_THIS_PTR gdtr.base = (bx_address)base_64;
     }
   else
   if (i->os32L()) {
@@ -889,7 +889,7 @@ BX_CPU_C::LIDT_Ms(bxInstruction_c *i)
     read_virtual_qword(i->seg(), RMAddr(i) + 2, &base_64);
 
     BX_CPU_THIS_PTR idtr.limit = limit_16;
-    BX_CPU_THIS_PTR idtr.base = base_64;
+    BX_CPU_THIS_PTR idtr.base = (bx_address)base_64;
     }
   else if (i->os32L()) {
     read_virtual_word(i->seg(), RMAddr(i), &limit_16);

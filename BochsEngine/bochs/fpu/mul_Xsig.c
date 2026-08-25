@@ -26,18 +26,18 @@ void mul32_Xsig(Xsig *x, const u32 ba)
   u64 b = ba, z;
 
   z = b * x->lsw;
-  y.lsw = z >> 32;
+  y.lsw = (u32)(z >> 32);
 
   z = b * x->midw;
-  y.midw = z >> 32;
-  zl = z;
+  y.midw = (u32)(z >> 32);
+  zl = (u32)z;
   y.lsw += zl;
   if ( zl > y.lsw )
     y.midw ++;
 
   z = b * x->msw;
-  y.msw = z >> 32;
-  zl = z;
+  y.msw = (u32)(z >> 32);
+  zl = (u32)z;
   y.midw += zl;
   if ( zl > y.midw )
     y.msw ++;
@@ -53,8 +53,8 @@ void mul64_Xsig(Xsig *x, const u64 *b)
 
   yh = *x;
   yl = *x;
-  mul32_Xsig(&yh, (*b) >> 32);
-  mul32_Xsig(&yl, *b);
+  mul32_Xsig(&yh, (u32)((*b) >> 32));
+  mul32_Xsig(&yl, (u32)(*b));
 
   x->msw = yh.msw;
   x->midw = yh.midw + yl.msw;
@@ -78,7 +78,7 @@ void mul_Xsig_Xsig(Xsig *x, const Xsig *b)
 
   y = b->lsw;
   y *= x->msw;
-  yh = y >> 32;
+  yh = (u32)(y >> 32);
 
   z = b->msw;
   z <<= 32;

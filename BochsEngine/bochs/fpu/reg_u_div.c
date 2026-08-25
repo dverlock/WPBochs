@@ -58,16 +58,16 @@ int FPU_u_div(const FPU_REG *a, const FPU_REG *b, FPU_REG *dest,
     {
       divr32 = b->sigh;
       ovfl = a->sigh >= divr32;
-      rat1 = work64 / divr32;
-      rem = work64 % divr32;
+      rat1 = (u32)(work64 / divr32);
+      rem = (u32)(work64 % divr32);
       work64 = rem;
       work64 <<= 32;
-      rat2 = work64 / divr32;
-      rem = work64 % divr32;
+      rat2 = (u32)(work64 / divr32);
+      rem = (u32)(work64 % divr32);
 
       work64 = rem;
       work64 <<= 32;
-      rem = work64 / divr32;
+      rem = (u32)(work64 / divr32);
 
       if (ovfl)
 	{
@@ -98,24 +98,24 @@ int FPU_u_div(const FPU_REG *a, const FPU_REG *b, FPU_REG *dest,
 
   if (divr32 != 0)
     {
-      rat1 = accum64 / divr32;
+      rat1 = (u32)(accum64 / divr32);
     }
   else
-    rat1 = accum64 >> 32;
+    rat1 = (u32)(accum64 >> 32);
   prod64 = rat1 * (u64)b->sigh;
 
   accum64 -= prod64;
   prod64 = rat1 * (u64)b->sigl;
-  accum3 = prod64;
+  accum3 = (u32)prod64;
   if (accum3)
     {
       accum3 = 0 - accum3;
       accum64 --;
     }
-  prodh = prod64 >> 32;
+  prodh = (u32)(prod64 >> 32);
   accum64 -= prodh;
 
-  work32 = accum64 >> 32;
+  work32 = (u32)(accum64 >> 32);
   if (work32)
     {
 #ifdef PARANOID
@@ -153,24 +153,24 @@ int FPU_u_div(const FPU_REG *a, const FPU_REG *b, FPU_REG *dest,
     }
   if (divr32 != 0)
     {
-      rat2 = accum64 / divr32;
+      rat2 = (u32)(accum64 / divr32);
     }
   else
-    rat2 = accum64 >> 32;
+    rat2 = (u32)(accum64 >> 32);
   prod64 = rat2 * (u64)b->sigh;
 
   accum64 -= prod64;
   prod64 = rat2 * (u64)b->sigl;
-  accum3 = prod64;
+  accum3 = (u32)prod64;
   if (accum3)
     {
       accum3 = 0 - accum3;
       accum64 --;
     }
-  prodh = prod64 >> 32;
+  prodh = (u32)(prod64 >> 32);
   accum64 -= prodh;
 
-  work32 = accum64 >> 32;
+  work32 = (u32)(accum64 >> 32);
   if (work32)
     {
 #ifdef PARANOID

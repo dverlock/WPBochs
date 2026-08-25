@@ -403,6 +403,7 @@ private:
 #include "iodev/floppy.h"
 #include "iodev/harddrv.h"
 #include "iodev/vmware3.h"
+#include "iodev/vmware4.h"
 #if BX_IODEBUG_SUPPORT
 #   include "iodev/iodebug.h"
 #endif

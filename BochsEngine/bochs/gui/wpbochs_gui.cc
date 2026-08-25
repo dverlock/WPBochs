@@ -128,6 +128,13 @@ void RequestShutdown()
   s_shutdownRequested = true;
 }
 
+void ShutdownNow()
+{
+  wpb_flush_all();
+  std::unique_lock<std::mutex> shutdownLock(s_pauseMutex);
+  s_pauseCv.wait(shutdownLock, [] { return false; });
+}
+
 void RequestPause(bool paused)
 {
   {
@@ -166,9 +173,7 @@ bx_gui_c::handle_events(void)
     longjmp(BX_CPU(0)->jmp_buf_env, 1);
   }
   if (s_shutdownRequested.exchange(false)) {
-    wpb_flush_all();
-    std::unique_lock<std::mutex> shutdownLock(s_pauseMutex);
-    s_pauseCv.wait(shutdownLock, [] { return false; });
+    WPBochsGui::ShutdownNow();
   }
 
   {

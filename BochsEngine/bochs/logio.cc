@@ -30,6 +30,7 @@
 #include <assert.h>
 #include <windows.h>
 #include "state_file.h"
+#include "gui/wpbochs_gui.h"
 
 static char *divider = "========================================================================";
 
@@ -481,7 +482,7 @@ logfunctions::fatal (const char *prefix, const char *fmt, va_list ap)
   fgets (buf, 8, stdin);
 #endif
 #if !BX_DEBUGGER
-  exit(1);
+  WPBochsGui::ShutdownNow();
 #else
   static Boolean dbg_exit_called = 0;
   if (dbg_exit_called == 0) {

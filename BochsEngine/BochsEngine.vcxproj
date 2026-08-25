@@ -353,6 +353,7 @@
     <ClCompile Include="bochs/iodev/extfpuirq.cc" />
     <ClCompile Include="bochs/iodev/virt_timer.cc" />
     <ClCompile Include="bochs/iodev/vmware3.cc" />
+    <ClCompile Include="bochs/iodev/vmware4.cc" />
     <ClCompile Include="bochs/iodev/serial.cc" />
     <ClCompile Include="bochs/iodev/parallel.cc" />
     <ClCompile Include="bochs/iodev/pic.cc" />

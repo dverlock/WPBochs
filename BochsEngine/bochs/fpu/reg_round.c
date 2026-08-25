@@ -183,9 +183,9 @@ int FPU_round(FPU_REG *x, u32 extent, u16 control_w, u8 sign)
 		      extent |= x->sigl;
 		      work = significand(x) >> shift;
 		      if (extent)
-			extent = work | 1;
+			extent = (u32)work | 1;
 		      else
-			extent = work;
+			extent = (u32)work;
 		      x->sigl = x->sigh >>= shift;
 		    }
 		  else

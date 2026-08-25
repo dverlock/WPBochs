@@ -40,7 +40,7 @@ unsigned FPU_shrx(void *arg1, u32 arg2)
 	  return 0;
 	}
       arg2 -= 64;
-      x = (*(u64 *)arg1) >> 32;
+      x = (u32)((*(u64 *)arg1) >> 32);
       *(u64 *)arg1 = 0;
 
       if ( arg2 )
@@ -54,16 +54,16 @@ unsigned FPU_shrx(void *arg1, u32 arg2)
       if ( arg2 == 0 )
 	return 0;
 
-      x = (*(u64 *)arg1) << (32 - arg2);
+      x = (u32)((*(u64 *)arg1) << (32 - arg2));
     }
   else if ( arg2 > 32 )
     {
-      x = (*(u64 *)arg1) >> (arg2 - 32);
+      x = (u32)((*(u64 *)arg1) >> (arg2 - 32));
     }
   else
     {
       /* arg2 == 32 */
-      x = *(u64 *)arg1;
+      x = (u32)(*(u64 *)arg1);
     }
 
   (*(u64 *)arg1) >>= arg2;
@@ -105,7 +105,7 @@ unsigned FPU_shrxs(void *arg1, u32 arg2)
 	}
       arg2 -= 64;
       lost = (*(u64 *)arg1) << (32 - arg2);
-      x = (*(u64 *)arg1) >> 32;
+      x = (u32)((*(u64 *)arg1) >> 32);
       *(u64 *)arg1 = 0;
 
       if ( arg2 )
@@ -124,13 +124,13 @@ unsigned FPU_shrxs(void *arg1, u32 arg2)
 	return 0;
 
       /* No bits are lost */
-      x = (*(u64 *)arg1) << (32 - arg2);
+      x = (u32)((*(u64 *)arg1) << (32 - arg2));
     }
   else if ( arg2 > 32 )
     {
-      bits = (*(u64 *)arg1);
+      bits = (u32)(*(u64 *)arg1);
       bits <<= (64 - arg2);
-      x = (*(u64 *)arg1) >> (arg2 - 32);
+      x = (u32)((*(u64 *)arg1) >> (arg2 - 32));
       if ( bits )
 	x |= 1;
     }
@@ -138,7 +138,7 @@ unsigned FPU_shrxs(void *arg1, u32 arg2)
     {
       /* arg2 == 32 */
       /* No bits are lost */
-      x = *(u64 *)arg1;
+      x = (u32)(*(u64 *)arg1);
     }
 
   (*(u64 *)arg1) >>= arg2;

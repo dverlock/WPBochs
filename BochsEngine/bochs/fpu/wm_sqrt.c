@@ -62,14 +62,14 @@ int wm_sqrt(FPU_REG *n, u16 control_w, u8 sign)
   guess += 0x40000000;
   guess *= 0xaaaaaaaa;
   guess <<= 1;
-  guess32 = guess >> 32;
+  guess32 = (u32)(guess >> 32);
   if ( !(guess32 & 0x80000000) )
     guess32 = 0x80000000;
   halfn = nn >> 1;
 
-  guess32 = halfn / guess32 + (guess32 >> 1);
-  guess32 = halfn / guess32 + (guess32 >> 1);
-  guess32 = halfn / guess32 + (guess32 >> 1);
+  guess32 = (u32)(halfn / guess32 + (guess32 >> 1));
+  guess32 = (u32)(halfn / guess32 + (guess32 >> 1));
+  guess32 = (u32)(halfn / guess32 + (guess32 >> 1));
 
 /*
  * Now that an estimate accurate to about 30 bits has been obtained,
@@ -109,8 +109,8 @@ int wm_sqrt(FPU_REG *n, u16 control_w, u8 sign)
 
   /* First, square the current guess. */
 
-  guess32 = guess >> 32;
-  work32 = guess;
+  guess32 = (u32)(guess >> 32);
+  work32 = (u32)guess;
 
   /* lower 32 times lower 32 */
   lowr = work32;
@@ -128,10 +128,10 @@ int wm_sqrt(FPU_REG *n, u16 control_w, u8 sign)
   upr += mid >> (32-1);
 
   /* lower 32 bits of the middle product times 2 */
-  work32 = mid << 1;
+  work32 = (u32)(mid << 1);
 
   /* upper 32 bits of the lower product */
-  mid32 = lowr >> 32;
+  mid32 = (u32)(lowr >> 32);
   mid32 += work32;
   if ( mid32 < work32 )
     upr ++;
@@ -159,22 +159,22 @@ int wm_sqrt(FPU_REG *n, u16 control_w, u8 sign)
 
       diff <<= 32;
       diff |= diff32;
-      work32 = diff / guess32;
+      work32 = (u32)(diff / guess32);
       work = work32;
       work <<= 32;
 
       diff = diff % guess32;
       diff <<= 32;
-      work32 = diff / guess32;
+      work32 = (u32)(diff / guess32);
 
       work |= work32;
 
       work >>= 1;
-      work32 = work >> 32;
+      work32 = (u32)(work >> 32);
 
 
       guess += work32;       /* The first 64 bits */
-      guess32 = work;        /* The next 32 bits */
+      guess32 = (u32)work;   /* The next 32 bits */
       /* The guess should now be good to about 90 bits */
     }
   else
@@ -183,20 +183,20 @@ int wm_sqrt(FPU_REG *n, u16 control_w, u8 sign)
       diff <<= 32;
       diff |= diff32;
 
-      work32 = diff / guess32;
+      work32 = (u32)(diff / guess32);
       work = work32;
       work <<= 32;
 
       diff = diff % guess32;
       diff <<= 32;
-      work32 = diff / guess32;
+      work32 = (u32)(diff / guess32);
 
       work |= work32;
 
       work >>= 1;
-      work32 = work >> 32;
+      work32 = (u32)(work >> 32);
 
-      guess32 = work;        /* The last 32 bits (of 96) */
+      guess32 = (u32)work;   /* The last 32 bits (of 96) */
       guess32 = 0 - guess32;
       if ( guess32 )
 	guess --;
@@ -232,12 +232,12 @@ int wm_sqrt(FPU_REG *n, u16 control_w, u8 sign)
 
 
       /* We compute the lower 64 bits of the 128 bit product */
-      work32 = guess;
+      work32 = (u32)guess;
       lowr = work32;
       lowr *= work32;
 
       uwork = guess >> 32;
-      work32 = guess;
+      work32 = (u32)guess;
       uwork *= work32;
       uwork <<= 33;   /* 33 = 32+1 (for two times the product) */
 
@@ -245,9 +245,9 @@ int wm_sqrt(FPU_REG *n, u16 control_w, u8 sign)
 
       /* We need only look at bits 65..96 of the square of guess. */
       if ( shifted )
-	work32 = lowr >> 31;
+	work32 = (u32)(lowr >> 31);
       else
-	work32 = lowr >> 32;
+	work32 = (u32)(lowr >> 32);
 
 #ifdef PARANOID
       if ( ((s32)work32 > 3*ERR_MARGIN) || ((s32)work32 < -3*ERR_MARGIN) )
@@ -289,11 +289,11 @@ int wm_sqrt(FPU_REG *n, u16 control_w, u8 sign)
   uwork |= 1;      /* add the half bit */
 
   /* We compute the lower 64 bits of the 128 bit product */
-  work32 = uwork;
+  work32 = (u32)uwork;
   lowr = work32;
   lowr *= work32;
 
-  work32 = uwork >> 32;
+  work32 = (u32)(uwork >> 32);
   uwork &= 0xffffffff;
   uwork *= work32;
   uwork <<= 33;   /* 33 = 32+1 (for two times the product) */
@@ -303,9 +303,9 @@ int wm_sqrt(FPU_REG *n, u16 control_w, u8 sign)
 
   /* We need only look at bits 65..96 of the square of guess. */
   if ( shifted )
-    work32 = lowr >> 31;
+    work32 = (u32)(lowr >> 31);
   else
-    work32 = lowr >> 32;
+    work32 = (u32)(lowr >> 32);
 
 #ifdef PARANOID
   if ( ((s32)work32 > 4*3*ERR_MARGIN) || ((s32)work32 < -4*3*ERR_MARGIN) )

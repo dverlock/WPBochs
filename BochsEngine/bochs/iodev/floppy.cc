@@ -987,7 +987,7 @@ bx_floppy_ctrl_c::floppy_xfer(Bit8u drive, Bit32u offset, Bit8u *buffer,
   if (strcmp(bx_options.floppya.Opath->getptr (), SuperDrive))
 #endif
     {
-    ret = wpb_lseek(BX_FD_THIS s.media[drive].fd, offset, SEEK_SET);
+    ret = (int)wpb_lseek(BX_FD_THIS s.media[drive].fd, offset, SEEK_SET);
     if (ret < 0) {
       BX_PANIC(("could not perform lseek() on floppy image file"));
       }
@@ -999,7 +999,7 @@ bx_floppy_ctrl_c::floppy_xfer(Bit8u drive, Bit32u offset, Bit8u *buffer,
       ret = fd_read((char *) buffer, offset, bytes);
     else
 #endif
-      ret = wpb_read(BX_FD_THIS s.media[drive].fd, (bx_ptr_t) buffer, bytes);
+      ret = (int)wpb_read(BX_FD_THIS s.media[drive].fd, (bx_ptr_t) buffer, bytes);
     if (ret < int(bytes)) {
       /* ??? */
       if (ret > 0) {
@@ -1021,7 +1021,7 @@ bx_floppy_ctrl_c::floppy_xfer(Bit8u drive, Bit32u offset, Bit8u *buffer,
       ret = fd_write((char *) buffer, offset, bytes);
     else
 #endif
-      ret = wpb_write(BX_FD_THIS s.media[drive].fd, (bx_ptr_t) buffer, bytes);
+      ret = (int)wpb_write(BX_FD_THIS s.media[drive].fd, (bx_ptr_t) buffer, bytes);
     if (ret < int(bytes)) {
       BX_PANIC(("could not perform write() on floppy image file"));
     }

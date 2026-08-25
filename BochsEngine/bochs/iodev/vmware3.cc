@@ -28,6 +28,7 @@
 #define BX_PLUGGABLE
 
 #include "bochs.h"
+#include "wpb_file_io.h"
 
 const off_t vmware3_image_t::INVALID_OFFSET=(off_t)-1;
 /* Not very friendly... */
@@ -96,20 +97,20 @@ int vmware3_image_t::open(const char * pathname)
 #endif
 
     /* Open the virtual disk */
-    file = ::open(pathname, flags);
+    file = wpb_open(pathname, flags);
 
     if(file < 0)
         return -1;
 
     /* Read the header */
-    if(::read(file, &header, sizeof(COW_Header)) < 0)
+    if(wpb_read(file, &header, sizeof(COW_Header)) < 0)
         BX_PANIC(("unable to read vmware3 COW Disk header from file '%s'", pathname));
 
     /* Make sure it's a valid header */
     if(!is_valid_header(header))
         BX_PANIC(("invalid vmware3 COW Disk image"));
 
-    ::close(file);
+    wpb_close(file);
 
     tlb_size  = header.tlb_size_sectors * 512;
     slb_count = (1 << FL_SHIFT) / tlb_size;
@@ -121,11 +122,11 @@ int vmware3_image_t::open(const char * pathname)
         char * filename = generate_cow_name(pathname, i);
         current = &images[i];
 
-        current->fd = ::open(filename, flags);
+        current->fd = wpb_open(filename, flags);
         if(current->fd < 0)
             BX_PANIC(("unable to open vmware3 COW Disk file '%s'", filename));
 
-        if(::read(current->fd, &current->header, sizeof(COW_Header)) < 0)
+        if(wpb_read(current->fd, &current->header, sizeof(COW_Header)) < 0)
             BX_PANIC(("unable to read header or invalid header in vmware3 COW Disk file '%s'", filename));
 
         if(!is_valid_header(current->header))
@@ -151,18 +152,18 @@ int vmware3_image_t::open(const char * pathname)
         if(current->tlb == 0)
             BX_PANIC(("cannot allocate %d bytes for tlb in vmware3 COW Disk '%s'", tlb_size, filename));
         
-        if(::lseek(current->fd, current->header.flb_offset_sectors * 512, SEEK_SET) < 0)
+        if(wpb_lseek(current->fd, (long long)current->header.flb_offset_sectors * 512, SEEK_SET) < 0)
             BX_PANIC(("unable to seek vmware3 COW Disk file '%s'", filename));
 
-        if(::read(current->fd, (char*)current->flb, current->header.flb_count * 4) < 0)
+        if(wpb_read(current->fd, (char*)current->flb, current->header.flb_count * 4) < 0)
             BX_PANIC(("unable to read flb from vmware3 COW Disk file '%s'", filename));
 
         for(j = 0; j < current->header.flb_count; ++j)
             if(current->flb[j] != 0)
             {
-                if(::lseek(current->fd, current->flb[j] * 512, SEEK_SET) < 0)
+                if(wpb_lseek(current->fd, (long long)current->flb[j] * 512, SEEK_SET) < 0)
                     BX_PANIC(("unable to seek vmware3 COW Disk file '%s'", filename));
-                if(::read(current->fd, (char*)current->slb[j], slb_count * 4) < 0)
+                if(wpb_read(current->fd, (char*)current->slb[j], slb_count * 4) < 0)
                     BX_PANIC(("unable to read slb from vmware3 COW Disk file '%s'", filename));
             }
 
@@ -215,12 +216,12 @@ off_t vmware3_image_t::perform_seek()
 
     if(current->slb[i][j])
     {
-        if(::lseek(current->fd, current->slb[i][j] * 512, SEEK_SET) < 0)
+        if(wpb_lseek(current->fd, (long long)current->slb[i][j] * 512, SEEK_SET) < 0)
         {
             BX_DEBUG(("could not seek vmware3 COW to sector slb[%d][%d]", i, j));
             return INVALID_OFFSET;
         }
-        if(::read(current->fd, current->tlb, tlb_size) < 0)
+        if(wpb_read(current->fd, current->tlb, tlb_size) < 0)
         {
             BX_DEBUG(("could not read %d bytes from vmware3 COW image", tlb_size));
             return INVALID_OFFSET;
@@ -276,12 +277,12 @@ bool vmware3_image_t::sync()
             
             /* Re-write the FLB */
             current->flb[i] = current->header.next_sector_to_allocate;
-            if(::lseek(current->fd, current->header.flb_offset_sectors * 512, SEEK_SET) < 0)
+            if(wpb_lseek(current->fd, (long long)current->header.flb_offset_sectors * 512, SEEK_SET) < 0)
             {
                 BX_DEBUG(("could not seek vmware3 COW image to flb on sync"));
                 return false;
             }
-            if(::write(current->fd, current->flb, current->header.flb_count * 4) < 0)
+            if(wpb_write(current->fd, current->flb, current->header.flb_count * 4) < 0)
             {
                 BX_DEBUG(("could not re-write flb to vmware3 COW image on sync"));
                 return false;
@@ -291,12 +292,12 @@ bool vmware3_image_t::sync()
 
         /* Re-write the SLB */
         current->slb[i][j] = current->header.next_sector_to_allocate;
-        if(::lseek(current->fd, current->flb[i] * 512, SEEK_SET) < 0)
+        if(wpb_lseek(current->fd, (long long)current->flb[i] * 512, SEEK_SET) < 0)
         {
             BX_DEBUG(("could not seek vmware3 COW image to slb on sync"));
             return false;
         }
-        if(::write(current->fd, current->slb[i], slb_count * 4) < 0)
+        if(wpb_write(current->fd, current->slb[i], slb_count * 4) < 0)
         {
             BX_DEBUG(("could not re-write slb to vmware3 COW image on sync"));
             return false;
@@ -304,23 +305,23 @@ bool vmware3_image_t::sync()
         current->header.next_sector_to_allocate += current->header.tlb_size_sectors;
 
         /* Update the header */
-        if(::lseek(current->fd, 0, SEEK_SET) < 0)
+        if(wpb_lseek(current->fd, 0, SEEK_SET) < 0)
         {
             BX_DEBUG(("could not seek to vmware3 COW image to offset 0 on sync"));
             return false;
         }
-        if(::write(current->fd, &current->header, sizeof(COW_Header)) < 0)
+        if(wpb_write(current->fd, &current->header, sizeof(COW_Header)) < 0)
         {
             BX_DEBUG(("could not re-write header to vmware3 COW image on sync"));
             return false;
         }
     }
-    if(::lseek(current->fd, current->slb[i][j] * 512, SEEK_SET) < 0)
+    if(wpb_lseek(current->fd, (long long)current->slb[i][j] * 512, SEEK_SET) < 0)
     {
         BX_DEBUG(("could not seek vmware3 COW image to offset %d on sync", current->slb[i][j] * 512));
         return false;
     }
-    if(::write(current->fd, current->tlb, tlb_size) < 0)
+    if(wpb_write(current->fd, current->tlb, tlb_size) < 0)
     {
         BX_DEBUG(("could not write tlb to vmware3 COW image on sync"));
         return false;
@@ -392,7 +393,7 @@ void vmware3_image_t::close()
         delete[] current->flb;
         delete[] current->slb;
         delete[] current->tlb;
-        ::close(current->fd);
+        wpb_close(current->fd);
     }
     delete[] images;
     current = 0;

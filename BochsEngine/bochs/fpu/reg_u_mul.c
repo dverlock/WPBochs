@@ -39,16 +39,16 @@ int FPU_u_mul(const FPU_REG *a, const FPU_REG *b, FPU_REG *c, u16 cw,
 
   ml = a->sigl;
   ml *= b->sigl;
-  ll = ml;
-  lh = ml >> 32;
+  ll = (u32)ml;
+  lh = (u32)(ml >> 32);
 
   mu = a->sigh;
   mu *= b->sigh;
 
   mi = a->sigh;
   mi *= b->sigl;
-  tl = mi;
-  th = mi >> 32;
+  tl = (u32)mi;
+  th = (u32)(mi >> 32);
   lh += tl;
   if (tl > lh)
     mu ++;
@@ -56,8 +56,8 @@ int FPU_u_mul(const FPU_REG *a, const FPU_REG *b, FPU_REG *c, u16 cw,
 
   mi = a->sigl;
   mi *= b->sigh;
-  tl = mi;
-  th = mi >> 32;
+  tl = (u32)mi;
+  th = (u32)(mi >> 32);
   lh += tl;
   if (tl > lh)
     mu ++;
@@ -87,14 +87,14 @@ int FPU_u_mul(const FPU_REG *a, const FPU_REG *b, FPU_REG *c, u16 cw,
       c->exp --;
     }
 
-  ll = ml;
-  lh = ml >> 32;
+  ll = (u32)ml;
+  lh = (u32)(ml >> 32);
 
   if (ll)
     lh |= 1;
 
-  c->sigl = mu;
-  c->sigh = mu >> 32;
+  c->sigl = (u32)mu;
+  c->sigh = (u32)(mu >> 32);
 
   return FPU_round(c, lh, cw, sign);
 }

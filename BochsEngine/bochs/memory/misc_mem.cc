@@ -73,7 +73,7 @@ BX_MEM_C::alloc_vector_aligned (size_t bytes, size_t alignment)
     vector = NULL;
   }
   Bit64u test_mask = alignment - 1;
-  actual_vector = new Bit8u [bytes+test_mask];
+  actual_vector = new Bit8u [(size_t)(bytes+test_mask)];
   // round address forward to nearest multiple of alignment.  Alignment 
   // MUST BE a power of two for this to work.
   Bit64u masked = ((Bit64u)(actual_vector + test_mask)) & ~test_mask;
