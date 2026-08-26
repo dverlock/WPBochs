@@ -40,6 +40,7 @@ or from my webpage: https://dverlock.top/wpbochs.
  - ACPI emulation (extremely experimental and limited)
  - Creating hard/floppy disk images inside WPBochs
  - Slowdown timer (throttles internal clock to real-time speed)
+ - Support for single-file VMDK hard disks
 ---
 ### Known issues
  - Opening/closing in-app log freezes the whole app for a couple of seconds on low-end devices
@@ -49,7 +50,7 @@ or from my webpage: https://dverlock.top/wpbochs.
 #### I can't install WPBochs, it fails with an error. How to fix it?
 Try installing VCLibs 12.00. You can find it online or download directly on [my webpage](https://dverlock.top/wpbochs/vclibs12.appx). If you still can't install WPBochs, check if you are running WP8.1 or higher. WPBochs is not installable on Windows Phone 8.0 or 7.x.
 
-If you're trying to install WPBochs on Windows 10 Mobile, it will fail with an error about an untrusted certificate. Because of that, on Windows 10 Mobile WPBochs could only be installed through CMD Injector.
+On Windows 10 Mobile, installation will fail with an untrusted certificate error, so WPBochs can only be installed there through CMD Injector.
 
 > **Note: WPBochs was not tested under Windows 10 Mobile.**
 #### Why is emulation so slow?
