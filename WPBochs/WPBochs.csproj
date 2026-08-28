@@ -111,7 +111,6 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Assets\BIOS\BIOS-bochs-latest" />
-    <Content Include="Assets\BIOS\BIOS-bochs-acpi" />
     <Content Include="Assets\BIOS\VGABIOS-lgpl-latest" />
     <Content Include="Assets\BIOS\wpbfdos.img" />
     <Content Include="Assets\Logo.scale-240.png" />

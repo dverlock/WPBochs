@@ -172,7 +172,7 @@ iofunctions::out(int f, int l, const char *prefix, const char *fmt, va_list ap)
 
 	vfprintf(logfd, fmt, ap);
 	fprintf(logfd, "\n");
-	fflush(logfd);
+	if (l == LOGLEV_PANIC) fflush(logfd);
 
 	{
 		char line[1024];

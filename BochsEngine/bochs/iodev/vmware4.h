@@ -31,7 +31,7 @@ class vmware4_image_t : public device_image_t
       vmware4_image_t() : file_descriptor(-1), tlb(0), tlb_offset(INVALID_OFFSET),
         current_offset(INVALID_OFFSET), is_dirty(false), gt_count(0), flb_cache(0),
         flb_copy_cache(0), slb_cache(0), current_flb_index(0), slb_cache_loaded(false),
-        slb_cache_dirty(false), current_slb_sector(0), current_slb_copy_sector(0)
+        current_slb_sector(0), current_slb_copy_sector(0)
       { };
       int open (const char* pathname);
       void close();
@@ -74,7 +74,6 @@ class vmware4_image_t : public device_image_t
       off_t perform_seek();
       void flush();
       void ensure_slb_cache(unsigned flb_index);
-      void flush_slb_cache();
 
       int file_descriptor;
       const char * pathname;
@@ -90,7 +89,6 @@ class vmware4_image_t : public device_image_t
       Bit32u * slb_cache;
       unsigned current_flb_index;
       bool slb_cache_loaded;
-      bool slb_cache_dirty;
       Bit64u current_slb_sector;
       Bit64u current_slb_copy_sector;
 };

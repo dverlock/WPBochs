@@ -82,7 +82,6 @@
                     <CheckBox x:Name="i440fxCheck" Content="i440fx emulation" Checked="ExperimentalFeatureCheck_Checked" HorizontalAlignment="Stretch"/>
                     <CheckBox x:Name="sb16Check" Content="Sound Blaster 16 emulation" Checked="ExperimentalFeatureCheck_Checked" HorizontalAlignment="Stretch"/>
                     <CheckBox x:Name="fpuCheck" Content="FPU emulation" IsChecked="True" HorizontalAlignment="Stretch"/>
-                    <CheckBox x:Name="acpiCheck" Content="ACPI support" HorizontalAlignment="Stretch" Checked="ExperimentalFeatureCheck_Checked"/>
                     <TextBlock Text="Keyboard type:" FontSize="18"/>
                     <RadioButton x:Name="kbXtRadio" Content="xt" FontSize="18" GroupName="KeyboardType" HorizontalAlignment="Stretch" VerticalContentAlignment="Top" HorizontalContentAlignment="Center"/>
                     <RadioButton x:Name="kbAtRadio" Content="at" FontSize="18" GroupName="KeyboardType" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
@@ -106,12 +105,20 @@
                     </Grid>
                     <Button x:Name="imageCreatorButton" Content="Image creator" Click="imageCreatorButton_Click" HorizontalAlignment="Stretch" VerticalAlignment="Top"/>
                     <Button x:Name="insertSampleButton" Content="Insert a demo FreeDOS floppy" Click="insertSampleButton_Click" HorizontalAlignment="Stretch"/>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <Button x:Name="saveConfigButton" Content="Save config" HorizontalAlignment="Stretch" Grid.Column="0" Margin="2" Click="saveConfigButton_Click"/>
+                        <Button x:Name="loadConfigButton" Content="Load config" HorizontalAlignment="Stretch" Grid.Column="1" Margin="2" Click="loadConfigButton_Click"/>
+                    </Grid>
                 </StackPanel>
                 <StackPanel Grid.Row="2" Margin="2" Grid.ColumnSpan="2">
-                    <CheckBox x:Name="newHDSupportCheck" Content="New hard drive support (Required for CDROM)"/>
+                    <CheckBox x:Name="newHDSupportCheck" Content="New hard drive support (Required for CDROM&amp;VMDK)"/>
                     <CheckBox x:Name="slowdownTimerCheck" Content="Slowdown timer (Throttles internal clock)" IsChecked="False" Checked="ExperimentalFeatureCheck_Checked"/>
                     <TextBlock Text="Emulated instructions per second (IPS):" FontSize="18"/>
-                    <TextBox x:Name="ipsBox" Text="10000000" InputScope="Number"/>
+                    <TextBox x:Name="ipsBox" Text="20000000" InputScope="Number"/>
                 </StackPanel>
             </Grid>
         </ScrollViewer>

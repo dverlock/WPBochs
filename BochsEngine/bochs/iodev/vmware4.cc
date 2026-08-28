@@ -75,7 +75,6 @@ int vmware4_image_t::open(const char* _pathname)
 
     current_flb_index = 0;
     slb_cache_loaded = false;
-    slb_cache_dirty = false;
 
     cylinders = (unsigned)(header.total_sectors / (16 * 63));
     heads = 16;
@@ -90,7 +89,6 @@ void vmware4_image_t::close()
         return;
 
     flush();
-    flush_slb_cache();
     delete [] tlb;
     tlb = 0;
     delete [] flb_cache;
@@ -232,7 +230,17 @@ off_t vmware4_image_t::perform_seek()
         tlb_sector = (Bit32u)(eof / SECTOR_SIZE);
 
         slb_cache[slb_index] = tlb_sector;
-        slb_cache_dirty = true;
+        {
+            long long entry_offset = (long long)slb_index * sizeof(Bit32u);
+            if (current_slb_sector != 0) {
+                wpb_lseek(file_descriptor, (long long)current_slb_sector * SECTOR_SIZE + entry_offset, SEEK_SET);
+                wpb_write(file_descriptor, &tlb_sector, sizeof(Bit32u));
+                }
+            if (current_slb_copy_sector != 0 && current_slb_copy_sector != current_slb_sector) {
+                wpb_lseek(file_descriptor, (long long)current_slb_copy_sector * SECTOR_SIZE + entry_offset, SEEK_SET);
+                wpb_write(file_descriptor, &tlb_sector, sizeof(Bit32u));
+                }
+        }
 
         wpb_lseek(file_descriptor, eof, SEEK_SET);
         }
@@ -258,29 +266,10 @@ void vmware4_image_t::flush()
     is_dirty = false;
 }
 
-void vmware4_image_t::flush_slb_cache()
-{
-    if (!slb_cache_loaded || !slb_cache_dirty)
-        return;
-
-    long long slb_bytes = (long long)header.slb_count * sizeof(Bit32u);
-    if (current_slb_sector != 0) {
-        wpb_lseek(file_descriptor, (long long)current_slb_sector * SECTOR_SIZE, SEEK_SET);
-        wpb_write(file_descriptor, slb_cache, slb_bytes);
-        }
-    if (current_slb_copy_sector != 0 && current_slb_copy_sector != current_slb_sector) {
-        wpb_lseek(file_descriptor, (long long)current_slb_copy_sector * SECTOR_SIZE, SEEK_SET);
-        wpb_write(file_descriptor, slb_cache, slb_bytes);
-        }
-    slb_cache_dirty = false;
-}
-
 void vmware4_image_t::ensure_slb_cache(unsigned flb_index)
 {
     if (slb_cache_loaded && flb_index == current_flb_index)
         return;
-
-    flush_slb_cache();
 
     Bit32u slb_sector = flb_cache[flb_index];
     Bit32u slb_copy_sector = flb_copy_cache[flb_index];

@@ -1269,7 +1269,6 @@ bx_vga_c::timer(void)
 
   update();
   bx_gui.flush();
-
 }
 
 

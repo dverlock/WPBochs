@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -20,7 +21,7 @@ namespace WPBochs
 {
     public sealed partial class MainPage : Page
     {
-        private const string BiosFileName = "BIOS-bochs-latest", AcpiBiosFileName = "BIOS-bochs-acpi", VgaBiosFileName = "VGABIOS-lgpl-latest", DemoFloppyFileName = "wpbfdos.img";
+        private const string BiosFileName = "BIOS-bochs-latest", VgaBiosFileName = "VGABIOS-lgpl-latest", DemoFloppyFileName = "wpbfdos.img";
         private bool _memoryWarningShown, _loadingSettings, _experimentalDialogShowing;
         private StorageFile _flpaFile, _flpbFile, _hd0File, _hd1File, _cdromFile;
         int lastMemorySliderValue;
@@ -46,8 +47,6 @@ namespace WPBochs
             i440fxCheck.Unchecked += save;
             sb16Check.Checked += save;
             sb16Check.Unchecked += save;
-            acpiCheck.Checked += (s, e) => { i440fxCheck.IsChecked = true; i440fxCheck.IsEnabled = false; save(s, e); };
-            acpiCheck.Unchecked += (s, e) => { i440fxCheck.IsEnabled = true; save(s, e); };
             fpuCheck.Checked += save;
             fpuCheck.Unchecked += save;
             newHDSupportCheck.Checked += save;
@@ -83,15 +82,27 @@ namespace WPBochs
                 await dialog.ShowAsync();
                 return;
             }
-            newHDSupportCheck.IsChecked = cdromCheck.IsChecked;
-            newHDSupportCheck.IsEnabled = cdromCheck.IsChecked != true;
+            UpdateNewHDSupportLock();
             SaveSettings();
         }
 
         private void CdromCheck_Unchecked(object sender, RoutedEventArgs e)
         {
-            newHDSupportCheck.IsEnabled = true;
+            UpdateNewHDSupportLock();
             SaveSettings();
+        }
+
+        private static bool IsVmdk(StorageFile file) => file != null && file.FileType.Equals(".vmdk", StringComparison.OrdinalIgnoreCase);
+
+        private void UpdateNewHDSupportLock()
+        {
+            bool required = cdromCheck.IsChecked == true || IsVmdk(_hd0File) || IsVmdk(_hd1File);
+            if (required)
+            {
+                newHDSupportCheck.IsChecked = true;
+                newHDSupportCheck.IsEnabled = false;
+            }
+            else newHDSupportCheck.IsEnabled = true;
         }
 
         private async void ExperimentalFeatureCheck_Checked(object sender, RoutedEventArgs e)
@@ -104,10 +115,7 @@ namespace WPBochs
                 dialog.Commands.Add(new UICommand("OK"));
                 await dialog.ShowAsync();
             }
-            finally
-            {
-                _experimentalDialogShowing = false;
-            }
+            finally { _experimentalDialogShowing = false; }
         }
 
         private void SaveSettings()
@@ -122,7 +130,6 @@ namespace WPBochs
             s["mouseChecked"] = mouseCheck.IsChecked == true;
             s["i440fxChecked"] = i440fxCheck.IsChecked == true;
             s["sb16Checked"] = sb16Check.IsChecked == true;
-            s["acpiChecked"] = acpiCheck.IsChecked == true;
             s["fpuChecked"] = fpuCheck.IsChecked == true;
             s["newHDChecked"] = newHDSupportCheck.IsChecked == true;
             s["slowdownTimerChecked"] = slowdownTimerCheck.IsChecked == true;
@@ -154,7 +161,6 @@ namespace WPBochs
                 if (s.ContainsKey("mouseChecked")) mouseCheck.IsChecked = (bool)s["mouseChecked"];
                 if (s.ContainsKey("i440fxChecked")) i440fxCheck.IsChecked = (bool)s["i440fxChecked"];
                 if (s.ContainsKey("sb16Checked")) sb16Check.IsChecked = (bool)s["sb16Checked"];
-                if (s.ContainsKey("acpiChecked")) acpiCheck.IsChecked = (bool)s["acpiChecked"];
                 if (s.ContainsKey("fpuChecked")) fpuCheck.IsChecked = (bool)s["fpuChecked"];
                 if (s.ContainsKey("newHDChecked")) newHDSupportCheck.IsChecked = (bool)s["newHDChecked"];
                 if (s.ContainsKey("slowdownTimerChecked")) slowdownTimerCheck.IsChecked = (bool)s["slowdownTimerChecked"];
@@ -179,11 +185,7 @@ namespace WPBochs
                 await RestoreFileSelectionAsync("hd0", f => { _hd0File = f; hd0Text.Text = f.Name; });
                 await RestoreFileSelectionAsync("hd1", f => { _hd1File = f; hd1Text.Text = f.Name; });
                 await RestoreFileSelectionAsync("cdrom", f => { _cdromFile = f; cdromText.Text = f.Name; });
-                if (cdromCheck.IsChecked == true)
-                {
-                    newHDSupportCheck.IsChecked = true;
-                    newHDSupportCheck.IsEnabled = false;
-                }
+                UpdateNewHDSupportLock();
             }
             finally { _loadingSettings = false; }
         }
@@ -238,6 +240,7 @@ namespace WPBochs
                     _hd0File = file;
                     hd0Text.Text = file.Name;
                     StorageApplicationPermissions.FutureAccessList.AddOrReplace("hd0", file);
+                    UpdateNewHDSupportLock();
                     break;
                 case "hd1":
                     if (file.FileType.Equals(".vmdk", StringComparison.OrdinalIgnoreCase) && !await IsSupportedVmdkAsync(file))
@@ -250,12 +253,17 @@ namespace WPBochs
                     _hd1File = file;
                     hd1Text.Text = file.Name;
                     StorageApplicationPermissions.FutureAccessList.AddOrReplace("hd1", file);
+                    UpdateNewHDSupportLock();
                     break;
                 case "cdrom":
                     _cdromFile = file;
                     cdromText.Text = file.Name;
                     StorageApplicationPermissions.FutureAccessList.AddOrReplace("cdrom", file);
                     break;
+                case "config":
+                    string configText = await FileIO.ReadTextAsync(file);
+                    await ApplyConfigAsync(ParseBochsrcText(configText));
+                    return;
             }
             SaveSettings();
         }
@@ -318,7 +326,6 @@ namespace WPBochs
         {
             StorageFolder localBios = await ApplicationData.Current.LocalFolder.CreateFolderAsync("bios", CreationCollisionOption.OpenIfExists);
             await CopyPackageFileAlwaysAsync(localBios, BiosFileName);
-            await CopyPackageFileAlwaysAsync(localBios, AcpiBiosFileName);
             await CopyPackageFileAlwaysAsync(localBios, VgaBiosFileName);
             return localBios;
         }
@@ -379,6 +386,139 @@ namespace WPBochs
             });
         }
 
+        private async void saveConfigButton_Click(object sender, RoutedEventArgs e)
+        {
+            TextBlock block = new TextBlock { Text = "Enter file name (without extension):" };
+            TextBox box = new TextBox { Text = "wpbochs" };
+            StackPanel panel = new StackPanel();
+            panel.Children.Add(block);
+            panel.Children.Add(box);
+            ContentDialog dialog = new ContentDialog
+            {
+                Title = "Save config",
+                Content = panel,
+                PrimaryButtonText = "Save",
+                SecondaryButtonText = "Cancel"
+            };
+            dialog.Opened += (s, a) => box.Focus(FocusState.Programmatic);
+            ContentDialogResult result = await dialog.ShowAsync();
+            if (result == ContentDialogResult.Primary)
+            {
+                FileSavePicker picker = new FileSavePicker();
+                picker.SuggestedStartLocation = PickerLocationId.DocumentsLibrary;
+                picker.SuggestedFileName = box.Text;
+                picker.FileTypeChoices.Add("WPBochs config", new List<string> { ".bochsrc" });
+                picker.PickSaveFileAndContinue();
+            }
+        }
+
+        private void loadConfigButton_Click(object sender, RoutedEventArgs e) => OpenFilePicker(new string[] { ".bochsrc" }, "filetype", "config");
+
+        public async void ContinueFileSavePicker(FileSavePickerContinuationEventArgs args)
+        {
+            if (args.File == null) return;
+            StorageFolder biosFolder = await EnsureBiosFilesAsync();
+            await FileIO.WriteTextAsync(args.File, await BuildBochsrcAsync(biosFolder));
+        }
+
+        private static Dictionary<string, string> ParseBochsrcText(string text)
+        {
+            Dictionary<string, string> result = new Dictionary<string, string>();
+            foreach (string rawLine in text.Split('\n'))
+            {
+                string line = rawLine.TrimEnd('\r').Trim();
+                if (line.Length == 0 || line.StartsWith("#")) continue;
+                int idx = line.IndexOf(':');
+                if (idx < 0) continue;
+                result[line.Substring(0, idx).Trim()] = line.Substring(idx + 1).Trim();
+            }
+            return result;
+        }
+
+        private static string ExtractQuoted(string s)
+        {
+            int start = s.IndexOf('"');
+            if (start < 0) return null;
+            int end = s.IndexOf('"', start + 1);
+            return end < 0 ? null : s.Substring(start + 1, end - start - 1);
+        }
+
+        private static bool ExtractEnabled(string s)
+        {
+            int idx = s.IndexOf("enabled=");
+            return idx >= 0 && idx + 8 < s.Length && s[idx + 8] == '1';
+        }
+
+        private async Task ApplyConfigAsync(Dictionary<string, string> cfg)
+        {
+            _loadingSettings = true;
+            try
+            {
+                List<string> missingPaths = new List<string>();
+                string val;
+
+                flpaCheck.IsChecked = cfg.ContainsKey("floppya");
+                await ApplyConfigFileAsync(cfg, "floppya", "flpa", f => { _flpaFile = f; flpaText.Text = f.Name; }, missingPaths);
+                flpbCheck.IsChecked = cfg.ContainsKey("floppyb");
+                await ApplyConfigFileAsync(cfg, "floppyb", "flpb", f => { _flpbFile = f; flpbText.Text = f.Name; }, missingPaths);
+                hd0Check.IsChecked = cfg.ContainsKey("diskc");
+                await ApplyConfigFileAsync(cfg, "diskc", "hd0", f => { _hd0File = f; hd0Text.Text = f.Name; }, missingPaths);
+                hd1Check.IsChecked = cfg.ContainsKey("diskd");
+                await ApplyConfigFileAsync(cfg, "diskd", "hd1", f => { _hd1File = f; hd1Text.Text = f.Name; }, missingPaths);
+                cdromCheck.IsChecked = cfg.ContainsKey("cdromd");
+                await ApplyConfigFileAsync(cfg, "cdromd", "cdrom", f => { _cdromFile = f; cdromText.Text = f.Name; }, missingPaths);
+
+                sb16Check.IsChecked = cfg.ContainsKey("sb16");
+                if (cfg.TryGetValue("mouse", out val)) mouseCheck.IsChecked = ExtractEnabled(val);
+                if (cfg.TryGetValue("fpu", out val)) fpuCheck.IsChecked = ExtractEnabled(val);
+                if (cfg.TryGetValue("i440fxsupport", out val)) i440fxCheck.IsChecked = ExtractEnabled(val);
+                if (cfg.TryGetValue("newharddrivesupport", out val)) newHDSupportCheck.IsChecked = ExtractEnabled(val);
+                if (cfg.TryGetValue("slowdown_timer", out val)) slowdownTimerCheck.IsChecked = ExtractEnabled(val);
+
+                double megs;
+                if (cfg.TryGetValue("megs", out val) && double.TryParse(val, NumberStyles.Float, CultureInfo.InvariantCulture, out megs)) memorySlider.Value = megs;
+                if (cfg.TryGetValue("ips", out val)) ipsBox.Text = val;
+                if (cfg.TryGetValue("boot", out val))
+                {
+                    bootFloppyRadio.IsChecked = val == "a";
+                    bootHardRadio.IsChecked = val == "c";
+                    bootCdromRadio.IsChecked = val == "cdrom";
+                }
+                if (cfg.TryGetValue("keyboard_type", out val))
+                {
+                    kbXtRadio.IsChecked = val == "xt";
+                    kbAtRadio.IsChecked = val == "at";
+                    kbMfRadio.IsChecked = val == "mf";
+                }
+
+                UpdateNewHDSupportLock();
+
+                if (missingPaths.Count > 0)
+                {
+                    MessageDialog dialog = new MessageDialog("The following files referenced by the config could not be found:" + Environment.NewLine + string.Join(Environment.NewLine, missingPaths), "Missing files");
+                    dialog.Commands.Add(new UICommand("OK"));
+                    await dialog.ShowAsync();
+                }
+            }
+            finally { _loadingSettings = false; }
+            SaveSettings();
+        }
+
+        private static async Task ApplyConfigFileAsync(Dictionary<string, string> cfg, string key, string token, Action<StorageFile> apply, List<string> missingPaths)
+        {
+            string line;
+            if (!cfg.TryGetValue(key, out line)) return;
+            string path = ExtractQuoted(line);
+            if (string.IsNullOrEmpty(path)) return;
+            try
+            {
+                StorageFile file = await StorageFile.GetFileFromPathAsync(path);
+                apply(file);
+                StorageApplicationPermissions.FutureAccessList.AddOrReplace(token, file);
+            }
+            catch (Exception) { missingPaths.Add(path); }
+        }
+
         private void CommitMemoryValue()
         {
             if (memoryAmountGrid.Visibility == Visibility.Collapsed) return;
@@ -390,43 +530,41 @@ namespace WPBochs
 
         private async Task<string> BuildBochsrcAsync(StorageFolder biosFolder)
         {
+            Windows.ApplicationModel.PackageVersion version = Windows.ApplicationModel.Package.Current.Id.Version;
             StringBuilder sb = new StringBuilder();
-            sb.AppendLine("# configuration file generated by WPBochs");
+            sb.AppendLine($"# Generated by WPBochs ({version.Major}.{version.Minor}.{version.Build}.{version.Revision})");
             if (flpaCheck.IsChecked == true && _flpaFile != null)
             {
                 BasicProperties flpaProps = await _flpaFile.GetBasicPropertiesAsync();
                 sb.AppendLine($"floppya: {GetFloppyTypeKey(flpaProps.Size)}=\"{_flpaFile.Path}\", status=inserted");
             }
-            else sb.AppendLine("# no floppya");
+            else sb.AppendLine();
             if (flpbCheck.IsChecked == true && _flpbFile != null)
             {
                 BasicProperties flpbProps = await _flpbFile.GetBasicPropertiesAsync();
                 sb.AppendLine($"floppyb: {GetFloppyTypeKey(flpbProps.Size)}=\"{_flpbFile.Path}\", status=inserted");
             }
-            else sb.AppendLine("# no floppyb");
+            else sb.AppendLine();
             if (hd0Check.IsChecked == true && _hd0File != null)
             {
                 BasicProperties props = await _hd0File.GetBasicPropertiesAsync();
                 long cyl = ComputeCylinders(props.Size, 16, 63);
                 sb.AppendLine($"diskc: file=\"{_hd0File.Path}\", cyl={cyl}, heads=16, spt=63");
             }
-            else sb.AppendLine("# no diskc");
+            else sb.AppendLine();
             if (hd1Check.IsChecked == true && _hd1File != null)
             {
                 BasicProperties props = await _hd1File.GetBasicPropertiesAsync();
                 long cyl = ComputeCylinders(props.Size, 16, 63);
                 sb.AppendLine($"diskd: file=\"{_hd1File.Path}\", cyl={cyl}, heads=16, spt=63");
             }
-            else sb.AppendLine("# no diskd");
+            else sb.AppendLine();
             if (cdromCheck.IsChecked == true && _cdromFile != null) sb.AppendLine($"cdromd: dev=\"{_cdromFile.Path}\", status=inserted");
-            else sb.AppendLine("# no cdromd");
-            bool acpiEnabled = acpiCheck.IsChecked == true && i440fxCheck.IsChecked == true;
-            if (acpiEnabled) sb.AppendLine($"romimage: file={biosFolder.Path}\\{AcpiBiosFileName}, address=0xe0000");
-            else sb.AppendLine($"romimage: file={biosFolder.Path}\\{BiosFileName}, address=0xf0000");
+            else sb.AppendLine();
+            sb.AppendLine($"romimage: file={biosFolder.Path}\\{BiosFileName}, address=0xf0000");
             sb.AppendLine($"vgaromimage: {biosFolder.Path}\\{VgaBiosFileName}");
             sb.AppendLine($"megs: {(int)memorySlider.Value}");
             if (sb16Check.IsChecked == true) sb.AppendLine("sb16: midimode=0, midi=, wavemode=1, wave=, loglevel=0, log=, dmatimer=600000");
-            if (acpiEnabled) sb.AppendLine("acpi: enabled=1");
             string boot = bootHardRadio.IsChecked == true ? "c" : (bootCdromRadio.IsChecked == true ? "cdrom" : "a");
             sb.AppendLine($"boot: {boot}");
             sb.AppendLine("vga_update_interval: 30000");

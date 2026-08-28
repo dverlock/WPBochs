@@ -25,8 +25,8 @@
                 </Grid.ColumnDefinitions>
                 <StackPanel Grid.Column="0" Margin="4">
                     <TextBlock Text="Image type:" FontSize="18" Foreground="White"/>
-                    <RadioButton x:Name="floppyTypeRadio" Content="Floppy disk" FontSize="18" GroupName="ImageKind" IsChecked="True" Checked="ImageKindRadio_Checked"/>
-                    <RadioButton x:Name="hardDiskTypeRadio" Content="Hard disk" FontSize="18" GroupName="ImageKind" Checked="ImageKindRadio_Checked"/>
+                    <RadioButton x:Name="floppyTypeRadio" Content="Floppy disk" FontSize="18" GroupName="ImageKind" IsChecked="True" Checked="ImageKindRadio_Checked" HorizontalAlignment="Stretch"/>
+                    <RadioButton x:Name="hardDiskTypeRadio" Content="Hard disk" FontSize="18" GroupName="ImageKind" Checked="ImageKindRadio_Checked" HorizontalAlignment="Stretch"/>
                     <StackPanel x:Name="floppySizePanel">
                         <TextBlock Text="Floppy size:" FontSize="18" Foreground="White"/>
                         <Grid>
@@ -46,11 +46,12 @@
                     </StackPanel>
                     <StackPanel x:Name="hardDiskSizePanel" Visibility="Collapsed">
                         <TextBlock Text="Hard disk size (MB):" FontSize="18" Foreground="White"/>
-                        <TextBox x:Name="hardDiskSizeBox" Text="504" PlaceholderText="e.g. 504" InputScope="Number"/>
+                        <TextBox x:Name="hardDiskSizeBox" Text="504" InputScope="Number"/>
+                        <CheckBox x:Name="vmdkCheck" Content="Use VMDK format" IsChecked="True" HorizontalAlignment="Stretch"/>
                     </StackPanel>
                 </StackPanel>
                 <StackPanel Grid.Column="1" Margin="4">
-                    <TextBlock Text="File name:" FontSize="18" Foreground="White"/>
+                    <TextBlock Text="File name (without extension):" FontSize="18" Foreground="White"/>
                     <TextBox x:Name="fileNameBox" Text="disk"/>
                     <Button x:Name="createButton" Content="Create" HorizontalAlignment="Stretch" Click="createButton_Click"/>
                     <TextBlock x:Name="errorText" Foreground="Red" FontSize="12" TextWrapping="Wrap"/>

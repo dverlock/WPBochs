@@ -89,6 +89,8 @@ namespace WPBochs
                 {
                     ImageCreator imageCreatorPage = rootFrame.Content as ImageCreator;
                     if (imageCreatorPage != null) imageCreatorPage.ContinueFileSavePicker(continuationArgs);
+                    MainPage mainPage = rootFrame.Content as MainPage;
+                    if (mainPage != null) mainPage.ContinueFileSavePicker(continuationArgs);
                 }
             }
         }

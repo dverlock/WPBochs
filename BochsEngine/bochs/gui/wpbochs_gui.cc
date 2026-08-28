@@ -130,6 +130,7 @@ void RequestShutdown()
 
 void ShutdownNow()
 {
+  bx_atexit();
   wpb_flush_all();
   std::unique_lock<std::mutex> shutdownLock(s_pauseMutex);
   s_pauseCv.wait(shutdownLock, [] { return false; });
