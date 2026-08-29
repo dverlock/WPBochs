@@ -82,6 +82,7 @@
                     <CheckBox x:Name="i440fxCheck" Content="i440fx emulation" Checked="ExperimentalFeatureCheck_Checked" HorizontalAlignment="Stretch"/>
                     <CheckBox x:Name="sb16Check" Content="Sound Blaster 16 emulation" Checked="ExperimentalFeatureCheck_Checked" HorizontalAlignment="Stretch"/>
                     <CheckBox x:Name="fpuCheck" Content="FPU emulation" IsChecked="True" HorizontalAlignment="Stretch"/>
+                    <CheckBox x:Name="ne2kCheck" Content="NE2000 networking" HorizontalAlignment="Stretch" Checked="ExperimentalFeatureCheck_Checked"/>
                     <TextBlock Text="Keyboard type:" FontSize="18"/>
                     <RadioButton x:Name="kbXtRadio" Content="xt" FontSize="18" GroupName="KeyboardType" HorizontalAlignment="Stretch" VerticalContentAlignment="Top" HorizontalContentAlignment="Center"/>
                     <RadioButton x:Name="kbAtRadio" Content="at" FontSize="18" GroupName="KeyboardType" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>

@@ -21,7 +21,7 @@ using System.IO;
 
 namespace WPBochs
 {
-    public class EmulatorLaunchParams { public string BochsrcPath; public bool MouseEnabled; public List<StorageFile> ExternalMediaFiles; }
+    public class EmulatorLaunchParams { public string BochsrcPath; public List<StorageFile> ExternalMediaFiles; }
 
     public sealed partial class EmulatorPage : Page
     {
@@ -31,6 +31,7 @@ namespace WPBochs
         private byte[] _frameBuffer, _grayscaleScratch;
         private uint _bitmapWidth, _bitmapHeight;
         private bool _mouseEnabled = true;
+        private bool _networkEnabled = true;
         private bool _paused, _machineStopped, _twoFingerTapConsumed;
         private ulong _lastInstructionCount;
         private const double TapMoveThreshold = 12.0, KeyHeight = 34;
@@ -54,8 +55,23 @@ namespace WPBochs
             EmulatorLaunchParams launchParams = e.Parameter as EmulatorLaunchParams;
             string bochsrcPath = launchParams != null ? launchParams.BochsrcPath : null;
             DebugWriteLine("Path to bochsrc is " + bochsrcPath);
-            _mouseEnabled = launchParams != null && launchParams.MouseEnabled;
+            string[] bochsrcLines = new string[0];
+            if (!string.IsNullOrEmpty(bochsrcPath))
+            {
+                StorageFile bochsrcFile = await StorageFile.GetFileFromPathAsync(bochsrcPath);
+                string bochsrcText = await FileIO.ReadTextAsync(bochsrcFile);
+                bochsrcLines = bochsrcText.Split('\n');
+            }
+            _mouseEnabled = false;
+            bool networkAvailable = false;
+            foreach (string rawLine in bochsrcLines)
+            {
+                string line = rawLine.TrimEnd('\r').Trim();
+                if (line.StartsWith("mouse:") && line.Contains("enabled=1")) _mouseEnabled = true;
+                else if (line.StartsWith("ne2k:")) networkAvailable = true;
+            }
             if (!_mouseEnabled) mouseToggleButton.Visibility = Visibility.Collapsed;
+            networkToggleButton.Visibility = networkAvailable ? Visibility.Visible : Visibility.Collapsed;
             AcquireWakelock();
             DebugWriteLine("Creating a BochsMachine");
             _machine = new BochsMachine();
@@ -296,6 +312,13 @@ namespace WPBochs
             _mouseEnabled = !_mouseEnabled;
             mouseToggleIcon.Source = new BitmapImage(new Uri( _mouseEnabled ? "ms-appx:///Assets/ToolbarIcons/mouse_enabled.png" : "ms-appx:///Assets/ToolbarIcons/mouse_disabled.png"));
             if (_machine != null) _machine.SetMouseEnabled(_mouseEnabled);
+        }
+
+        private void networkToggleButton_Click(object sender, RoutedEventArgs e)
+        {
+            _networkEnabled = !_networkEnabled;
+            networkToggleIcon.Source = new BitmapImage(new Uri( _networkEnabled ? "ms-appx:///Assets/ToolbarIcons/yesnetwork.png" : "ms-appx:///Assets/ToolbarIcons/nonetwork.png"));
+            if (_machine != null) _machine.SetNetworkEnabled(_networkEnabled);
         }
 
         private void keyboardToggleButton_Click(object sender, RoutedEventArgs e) => keyboardOverlay.Visibility = keyboardOverlay.Visibility == Visibility.Visible ? Visibility.Collapsed : Visibility.Visible;

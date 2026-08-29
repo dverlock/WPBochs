@@ -1,2 +1,2 @@
-#define VER_STRING "1.4.1"
-#define REL_STRING "2006"
+#define VER_STRING "2.1"
+#define REL_STRING "2026"

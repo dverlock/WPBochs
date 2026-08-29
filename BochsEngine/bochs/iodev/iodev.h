@@ -265,6 +265,7 @@ class BOCHSAPI bx_pci_stub_c : public bx_devmodel_c {
 class BOCHSAPI bx_ne2k_stub_c : public bx_devmodel_c {
   public:
   virtual void print_info(FILE *file, int page, int reg, int nodups) {}
+  virtual void set_link_enabled(bx_bool enabled) {}
 };
 
 class BOCHSAPI bx_devices_c : public logfunctions {

@@ -146,6 +146,7 @@
     <ClInclude Include="BochsMachine.h" />
     <ClInclude Include="wpb_file_io_internal.h" />
     <ClInclude Include="bochs\wpb_file_io.h" />
+    <ClInclude Include="bochs\wpb_net_io.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -164,6 +165,14 @@
       <CompileAsWinRT>true</CompileAsWinRT>
     </ClCompile>
     <ClCompile Include="wpb_file_io.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Use</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Use</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">Use</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <CompileAsWinRT>true</CompileAsWinRT>
+    </ClCompile>
+    <ClCompile Include="wpb_net_io.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Use</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Use</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">Use</PrecompiledHeader>
@@ -347,6 +356,10 @@
     <ClCompile Include="bochs/iodev/harddrv.cc" />
     <ClCompile Include="bochs/iodev/keyboard.cc" />
     <ClCompile Include="bochs/iodev/acpi.cc" />
+    <ClCompile Include="bochs/iodev/eth.cc" />
+    <ClCompile Include="bochs/iodev/eth_null.cc" />
+    <ClCompile Include="bochs/iodev/eth_nat.cc" />
+    <ClCompile Include="bochs/iodev/ne2k.cc" />
     <ClCompile Include="bochs/iodev/pci.cc" />
     <ClCompile Include="bochs/iodev/pci2isa.cc" />
     <ClCompile Include="bochs/iodev/biosdev.cc" />

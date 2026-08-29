@@ -78,6 +78,10 @@
             <TextBlock x:Name="ipsText" Grid.Column="1" Text="0 IPS" Foreground="White" FontSize="20" VerticalAlignment="Center" Margin="0,0,10,0"/>
 
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Grid.Column="2">
+                <Border x:Name="networkToggleButton" Style="{StaticResource TopBarIconBorderStyle}" Tapped="networkToggleButton_Click" PointerPressed="ToolbarButton_PointerPressed" PointerReleased="ToolbarButton_PointerReleased" PointerExited="ToolbarButton_PointerReleased" PointerCanceled="ToolbarButton_PointerReleased">
+                    <Image x:Name="networkToggleIcon" Source="Assets/ToolbarIcons/yesnetwork.png" Width="28" Height="28"/>
+                </Border>
+
                 <Border x:Name="mouseToggleButton" Style="{StaticResource TopBarIconBorderStyle}" Tapped="mouseToggleButton_Click" PointerPressed="ToolbarButton_PointerPressed" PointerReleased="ToolbarButton_PointerReleased" PointerExited="ToolbarButton_PointerReleased" PointerCanceled="ToolbarButton_PointerReleased">
                     <Image x:Name="mouseToggleIcon" Source="Assets/ToolbarIcons/mouse_enabled.png" Width="28" Height="28"/>
                 </Border>

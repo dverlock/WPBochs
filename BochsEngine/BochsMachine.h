@@ -28,6 +28,7 @@ namespace BochsEngine
         void MouseMove(int dx, int dy);
         void MouseButton(int button, bool down);
         void SetMouseEnabled(bool enabled);
+        void SetNetworkEnabled(bool enabled);
 
         event PanicHandler^ PanicRequested;
 

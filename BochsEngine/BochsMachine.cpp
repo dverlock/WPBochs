@@ -206,6 +206,11 @@ void BochsMachine::SetMouseEnabled(bool enabled)
     WPBochsGui::SetMouseEnabled(enabled);
 }
 
+void BochsMachine::SetNetworkEnabled(bool enabled)
+{
+    if (bx_devices.pluginNE2kDevice) bx_devices.pluginNE2kDevice->set_link_enabled(enabled);
+}
+
 unsigned int BochsMachine::GetFrameWidth()
 {
     return WPBochsGui::GetDimensions().width;

@@ -200,11 +200,13 @@ public:
   virtual void init(void);
   virtual void reset(unsigned type);
   virtual void print_info (FILE *file, int page, int reg, int nodups);
+  virtual void set_link_enabled(bx_bool enabled);
 
 private:
   bx_ne2k_t s;
 
   eth_pktmover_c *ethdev;
+  bx_bool link_enabled;
 
   BX_NE2K_SMF Bit32u read_cr(void);
   BX_NE2K_SMF void   write_cr(Bit32u value);

@@ -124,6 +124,8 @@
     <Content Include="Assets\ToolbarIcons\ips_speed.png" />
     <Content Include="Assets\ToolbarIcons\mouse_disabled.png" />
     <Content Include="Assets\ToolbarIcons\mouse_enabled.png" />
+    <Content Include="Assets\ToolbarIcons\yesnetwork.png" />
+    <Content Include="Assets\ToolbarIcons\nonetwork.png" />
     <Content Include="Assets\ToolbarIcons\pause.png" />
     <Content Include="Assets\ToolbarIcons\resume.png" />
     <Content Include="Assets\ToolbarIcons\poweroff.png" />

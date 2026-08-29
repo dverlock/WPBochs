@@ -49,6 +49,8 @@ namespace WPBochs
             sb16Check.Unchecked += save;
             fpuCheck.Checked += save;
             fpuCheck.Unchecked += save;
+            ne2kCheck.Checked += save;
+            ne2kCheck.Unchecked += save;
             newHDSupportCheck.Checked += save;
             newHDSupportCheck.Unchecked += save;
             slowdownTimerCheck.Checked += save;
@@ -131,6 +133,7 @@ namespace WPBochs
             s["i440fxChecked"] = i440fxCheck.IsChecked == true;
             s["sb16Checked"] = sb16Check.IsChecked == true;
             s["fpuChecked"] = fpuCheck.IsChecked == true;
+            s["ne2kChecked"] = ne2kCheck.IsChecked == true;
             s["newHDChecked"] = newHDSupportCheck.IsChecked == true;
             s["slowdownTimerChecked"] = slowdownTimerCheck.IsChecked == true;
             s["memory"] = memorySlider.Value;
@@ -162,6 +165,7 @@ namespace WPBochs
                 if (s.ContainsKey("i440fxChecked")) i440fxCheck.IsChecked = (bool)s["i440fxChecked"];
                 if (s.ContainsKey("sb16Checked")) sb16Check.IsChecked = (bool)s["sb16Checked"];
                 if (s.ContainsKey("fpuChecked")) fpuCheck.IsChecked = (bool)s["fpuChecked"];
+                if (s.ContainsKey("ne2kChecked")) ne2kCheck.IsChecked = (bool)s["ne2kChecked"];
                 if (s.ContainsKey("newHDChecked")) newHDSupportCheck.IsChecked = (bool)s["newHDChecked"];
                 if (s.ContainsKey("slowdownTimerChecked")) slowdownTimerCheck.IsChecked = (bool)s["slowdownTimerChecked"];
                 if (s.ContainsKey("memory")) memorySlider.Value = (double)s["memory"];
@@ -469,6 +473,7 @@ namespace WPBochs
                 await ApplyConfigFileAsync(cfg, "cdromd", "cdrom", f => { _cdromFile = f; cdromText.Text = f.Name; }, missingPaths);
 
                 sb16Check.IsChecked = cfg.ContainsKey("sb16");
+                ne2kCheck.IsChecked = cfg.ContainsKey("ne2k");
                 if (cfg.TryGetValue("mouse", out val)) mouseCheck.IsChecked = ExtractEnabled(val);
                 if (cfg.TryGetValue("fpu", out val)) fpuCheck.IsChecked = ExtractEnabled(val);
                 if (cfg.TryGetValue("i440fxsupport", out val)) i440fxCheck.IsChecked = ExtractEnabled(val);
@@ -565,6 +570,7 @@ namespace WPBochs
             sb.AppendLine($"vgaromimage: {biosFolder.Path}\\{VgaBiosFileName}");
             sb.AppendLine($"megs: {(int)memorySlider.Value}");
             if (sb16Check.IsChecked == true) sb.AppendLine("sb16: midimode=0, midi=, wavemode=1, wave=, loglevel=0, log=, dmatimer=600000");
+            if (ne2kCheck.IsChecked == true) sb.AppendLine("ne2k: ioaddr=0x300, irq=3, mac=00:11:22:33:44:55, ethmod=nat");
             string boot = bootHardRadio.IsChecked == true ? "c" : (bootCdromRadio.IsChecked == true ? "cdrom" : "a");
             sb.AppendLine($"boot: {boot}");
             sb.AppendLine("vga_update_interval: 30000");
@@ -645,7 +651,6 @@ namespace WPBochs
                 Frame.Navigate(typeof(EmulatorPage), new EmulatorLaunchParams
                 {
                     BochsrcPath = rcFile.Path,
-                    MouseEnabled = mouseCheck.IsChecked == true,
                     ExternalMediaFiles = externalFiles
                 });
             }

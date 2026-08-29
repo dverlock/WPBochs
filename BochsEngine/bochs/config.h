@@ -699,7 +699,7 @@ typedef Bit32u bx_address;
 #endif
 
 // NE2K network emulation
-#define BX_NE2K_SUPPORT 0
+#define BX_NE2K_SUPPORT 1
 #define BX_ETH_NULL_LOGGING 1
 #define BX_ETH_FBSD_LOGGING 1
 
