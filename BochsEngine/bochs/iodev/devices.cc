@@ -72,6 +72,7 @@ bx_devices_c::bx_devices_c(void)
   pluginHardDrive = &stubHardDrive;
   pluginSB16Device = NULL;
   pluginACPIController = NULL;
+  pluginPciIdeController = NULL;
   pluginNE2kDevice =&stubNE2k;
   pluginExtFpuIrq = NULL;
   pluginGameport = NULL;
@@ -161,6 +162,7 @@ bx_devices_c::init(BX_MEM_C *newmem)
 #if BX_PCI_SUPPORT
     PLUG_load_plugin(pci, PLUGTYPE_OPTIONAL);
     PLUG_load_plugin(pci2isa, PLUGTYPE_OPTIONAL);
+    PLUG_load_plugin(pci_ide, PLUGTYPE_OPTIONAL);
 #if BX_PCI_VGA_SUPPORT
     PLUG_load_plugin(pcivga, PLUGTYPE_OPTIONAL);
 #endif
@@ -302,6 +304,7 @@ bx_devices_c::reset(unsigned type)
 #if BX_SUPPORT_ACPI
     if (pluginACPIController) pluginACPIController->reset(type);
 #endif
+    if (pluginPciIdeController) pluginPciIdeController->reset(type);
   }
 #endif
 #if BX_SUPPORT_IOAPIC

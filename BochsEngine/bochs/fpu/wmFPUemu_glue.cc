@@ -29,6 +29,8 @@
 
 #include "bochs.h"
 #include <math.h>
+#include <cstdarg>
+#include <cstdio>
 
 #if !BX_WITH_MACOS
 extern "C" {
@@ -284,6 +286,11 @@ math_abort(void *info, unsigned int signal)
 
 extern "C" int printk(const char * fmt, ...)
 {
-  BX_INFO(("math abort: %s", fmt));
+  char buf[256];
+  va_list ap;
+  va_start(ap, fmt);
+  vsnprintf(buf, sizeof(buf), fmt, ap);
+  va_end(ap);
+  BX_INFO(("math abort: %s", buf));
   return 0;
 }

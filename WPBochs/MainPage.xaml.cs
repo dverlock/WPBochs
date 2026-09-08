@@ -41,10 +41,18 @@ namespace WPBochs
             hd0Check.Unchecked += save;
             hd1Check.Checked += save;
             hd1Check.Unchecked += save;
+            hd0Check.Checked += (s, e) => UpdateNewHDSupportLock();
+            hd0Check.Unchecked += (s, e) => UpdateNewHDSupportLock();
+            hd1Check.Checked += (s, e) => UpdateNewHDSupportLock();
+            hd1Check.Unchecked += (s, e) => UpdateNewHDSupportLock();
             mouseCheck.Checked += save;
             mouseCheck.Unchecked += save;
             i440fxCheck.Checked += save;
             i440fxCheck.Unchecked += save;
+            acpiCheck.Checked += save;
+            acpiCheck.Unchecked += save;
+            acpiCheck.Checked += AcpiCheck_Checked;
+            acpiCheck.Unchecked += AcpiCheck_Unchecked;
             sb16Check.Checked += save;
             sb16Check.Unchecked += save;
             fpuCheck.Checked += save;
@@ -96,15 +104,30 @@ namespace WPBochs
 
         private static bool IsVmdk(StorageFile file) => file != null && file.FileType.Equals(".vmdk", StringComparison.OrdinalIgnoreCase);
 
+        private static bool IsGrowableImage(StorageFile file) => file != null && (file.FileType.Equals(".vmdk", StringComparison.OrdinalIgnoreCase) || file.FileType.Equals(".vhd", StringComparison.OrdinalIgnoreCase) || file.FileType.Equals(".vdi", StringComparison.OrdinalIgnoreCase));
+
         private void UpdateNewHDSupportLock()
         {
-            bool required = cdromCheck.IsChecked == true || IsVmdk(_hd0File) || IsVmdk(_hd1File);
+            bool required = cdromCheck.IsChecked == true ||
+                (hd0Check.IsChecked == true && IsGrowableImage(_hd0File)) ||
+                (hd1Check.IsChecked == true && IsGrowableImage(_hd1File));
             if (required)
             {
                 newHDSupportCheck.IsChecked = true;
                 newHDSupportCheck.IsEnabled = false;
             }
             else newHDSupportCheck.IsEnabled = true;
+        }
+
+        private void AcpiCheck_Checked(object sender, RoutedEventArgs e)
+        {
+            i440fxCheck.IsChecked = true;
+            i440fxCheck.IsEnabled = false;
+        }
+
+        private void AcpiCheck_Unchecked(object sender, RoutedEventArgs e)
+        {
+            i440fxCheck.IsEnabled = true;
         }
 
         private async void ExperimentalFeatureCheck_Checked(object sender, RoutedEventArgs e)
@@ -131,6 +154,7 @@ namespace WPBochs
             s["cdromChecked"] = cdromCheck.IsChecked == true;
             s["mouseChecked"] = mouseCheck.IsChecked == true;
             s["i440fxChecked"] = i440fxCheck.IsChecked == true;
+            s["acpiChecked"] = acpiCheck.IsChecked == true;
             s["sb16Checked"] = sb16Check.IsChecked == true;
             s["fpuChecked"] = fpuCheck.IsChecked == true;
             s["ne2kChecked"] = ne2kCheck.IsChecked == true;
@@ -163,6 +187,7 @@ namespace WPBochs
                 if (s.ContainsKey("cdromChecked")) cdromCheck.IsChecked = (bool)s["cdromChecked"];
                 if (s.ContainsKey("mouseChecked")) mouseCheck.IsChecked = (bool)s["mouseChecked"];
                 if (s.ContainsKey("i440fxChecked")) i440fxCheck.IsChecked = (bool)s["i440fxChecked"];
+                if (s.ContainsKey("acpiChecked")) acpiCheck.IsChecked = (bool)s["acpiChecked"];
                 if (s.ContainsKey("sb16Checked")) sb16Check.IsChecked = (bool)s["sb16Checked"];
                 if (s.ContainsKey("fpuChecked")) fpuCheck.IsChecked = (bool)s["fpuChecked"];
                 if (s.ContainsKey("ne2kChecked")) ne2kCheck.IsChecked = (bool)s["ne2kChecked"];
@@ -234,11 +259,8 @@ namespace WPBochs
                     StorageApplicationPermissions.FutureAccessList.AddOrReplace("flpb", file);
                     break;
                 case "hd0":
-                    if (file.FileType.Equals(".vmdk", StringComparison.OrdinalIgnoreCase) && !await IsSupportedVmdkAsync(file))
+                    if (!await IsSupportedHardDiskImageAsync(file))
                     {
-                        MessageDialog messageDialog = new MessageDialog("WPBochs currently only supports VMware 3 COW disk and VMware 4+ sparse disk format .vmdk files.", "Unsupported VMDK format");
-                        messageDialog.Commands.Add(new UICommand("OK"));
-                        await messageDialog.ShowAsync();
                         return;
                     }
                     _hd0File = file;
@@ -247,11 +269,8 @@ namespace WPBochs
                     UpdateNewHDSupportLock();
                     break;
                 case "hd1":
-                    if (file.FileType.Equals(".vmdk", StringComparison.OrdinalIgnoreCase) && !await IsSupportedVmdkAsync(file))
+                    if (!await IsSupportedHardDiskImageAsync(file))
                     {
-                        MessageDialog messageDialog = new MessageDialog("WPBochs currently only supports VMware 3 COW disk and VMware 4+ sparse disk format .vmdk files.", "Unsupported VMDK format");
-                        messageDialog.Commands.Add(new UICommand("OK"));
-                        await messageDialog.ShowAsync();
                         return;
                     }
                     _hd1File = file;
@@ -305,9 +324,35 @@ namespace WPBochs
 
         private void flpbSelectButton_Click(object sender, RoutedEventArgs e) => OpenFilePicker(new string[] { ".img", ".ima" }, "filetype", "flp1");
 
-        private void hd0SelectButton_Click(object sender, RoutedEventArgs e) => OpenFilePicker(new string[] { ".img", ".vmdk" }, "filetype", "hd0");
+        private void hd0SelectButton_Click(object sender, RoutedEventArgs e) => OpenFilePicker(new string[] { ".img", ".vmdk", ".vhd", ".vdi" }, "filetype", "hd0");
 
-        private void hd1SelectButton_Click(object sender, RoutedEventArgs e) => OpenFilePicker(new string[] { ".img", ".vmdk" }, "filetype", "hd1");
+        private void hd1SelectButton_Click(object sender, RoutedEventArgs e) => OpenFilePicker(new string[] { ".img", ".vmdk", ".vhd", ".vdi" }, "filetype", "hd1");
+
+        private static async Task<bool> IsSupportedHardDiskImageAsync(StorageFile file)
+        {
+            if (file.FileType.Equals(".vmdk", StringComparison.OrdinalIgnoreCase) && !await IsSupportedVmdkAsync(file))
+            {
+                MessageDialog messageDialog = new MessageDialog("WPBochs currently only supports VMware 3 COW disk and VMware 4+ sparse disk format .vmdk files.", "Unsupported VMDK format");
+                messageDialog.Commands.Add(new UICommand("OK"));
+                await messageDialog.ShowAsync();
+                return false;
+            }
+            if (file.FileType.Equals(".vhd", StringComparison.OrdinalIgnoreCase) && !await IsSupportedVhdAsync(file))
+            {
+                MessageDialog messageDialog = new MessageDialog("WPBochs currently only supports dynamically-allocated .vhd files, not fixed-size VHDs.", "Unsupported VHD format");
+                messageDialog.Commands.Add(new UICommand("OK"));
+                await messageDialog.ShowAsync();
+                return false;
+            }
+            if (file.FileType.Equals(".vdi", StringComparison.OrdinalIgnoreCase) && !await IsSupportedVdiAsync(file))
+            {
+                MessageDialog messageDialog = new MessageDialog("WPBochs currently only supports dynamically-allocated .vdi files, not fixed-size (static) VDIs.", "Unsupported VDI format");
+                messageDialog.Commands.Add(new UICommand("OK"));
+                await messageDialog.ShowAsync();
+                return false;
+            }
+            return true;
+        }
 
         private static async Task<bool> IsSupportedVmdkAsync(StorageFile file)
         {
@@ -321,6 +366,41 @@ namespace WPBochs
                 bool isVmware3 = magic[0] == (byte)'C' && magic[1] == (byte)'O' && magic[2] == (byte)'W' && magic[3] == (byte)'D';
                 bool isVmware4 = magic[0] == (byte)'K' && magic[1] == (byte)'D' && magic[2] == (byte)'M' && magic[3] == (byte)'V';
                 return isVmware3 || isVmware4;
+            }
+        }
+
+        private static async Task<bool> IsSupportedVhdAsync(StorageFile file)
+        {
+            using (IRandomAccessStream stream = await file.OpenAsync(FileAccessMode.Read))
+            using (DataReader reader = new DataReader(stream))
+            {
+                await reader.LoadAsync(64);
+                if (reader.UnconsumedBufferLength < 64) return false;
+                byte[] header = new byte[64];
+                reader.ReadBytes(header);
+                byte[] cookie = { (byte)'c', (byte)'o', (byte)'n', (byte)'e', (byte)'c', (byte)'t', (byte)'i', (byte)'x' };
+                for (int i = 0; i < cookie.Length; i++)
+                {
+                    if (header[i] != cookie[i]) return false;
+                }
+                uint diskType = (uint)((header[60] << 24) | (header[61] << 16) | (header[62] << 8) | header[63]);
+                return diskType == 3;
+            }
+        }
+
+        private static async Task<bool> IsSupportedVdiAsync(StorageFile file)
+        {
+            using (IRandomAccessStream stream = await file.OpenAsync(FileAccessMode.Read))
+            using (DataReader reader = new DataReader(stream))
+            {
+                await reader.LoadAsync(80);
+                if (reader.UnconsumedBufferLength < 80) return false;
+                byte[] header = new byte[80];
+                reader.ReadBytes(header);
+                uint signature = (uint)(header[64] | (header[65] << 8) | (header[66] << 16) | (header[67] << 24));
+                if (signature != 0xBEDA107F) return false;
+                uint imageType = (uint)(header[76] | (header[77] << 8) | (header[78] << 16) | (header[79] << 24));
+                return imageType == 1;
             }
         }
 
@@ -477,6 +557,7 @@ namespace WPBochs
                 if (cfg.TryGetValue("mouse", out val)) mouseCheck.IsChecked = ExtractEnabled(val);
                 if (cfg.TryGetValue("fpu", out val)) fpuCheck.IsChecked = ExtractEnabled(val);
                 if (cfg.TryGetValue("i440fxsupport", out val)) i440fxCheck.IsChecked = ExtractEnabled(val);
+                if (cfg.TryGetValue("acpi", out val)) acpiCheck.IsChecked = ExtractEnabled(val);
                 if (cfg.TryGetValue("newharddrivesupport", out val)) newHDSupportCheck.IsChecked = ExtractEnabled(val);
                 if (cfg.TryGetValue("slowdown_timer", out val)) slowdownTimerCheck.IsChecked = ExtractEnabled(val);
 
@@ -566,7 +647,7 @@ namespace WPBochs
             else sb.AppendLine();
             if (cdromCheck.IsChecked == true && _cdromFile != null) sb.AppendLine($"cdromd: dev=\"{_cdromFile.Path}\", status=inserted");
             else sb.AppendLine();
-            sb.AppendLine($"romimage: file={biosFolder.Path}\\{BiosFileName}, address=0xf0000");
+            sb.AppendLine($"romimage: file={biosFolder.Path}\\{BiosFileName}, address=0xe0000");
             sb.AppendLine($"vgaromimage: {biosFolder.Path}\\{VgaBiosFileName}");
             sb.AppendLine($"megs: {(int)memorySlider.Value}");
             if (sb16Check.IsChecked == true) sb.AppendLine("sb16: midimode=0, midi=, wavemode=1, wave=, loglevel=0, log=, dmatimer=600000");
@@ -584,6 +665,7 @@ namespace WPBochs
             sb.AppendLine($"fpu: enabled={(fpuCheck.IsChecked == true ? 1 : 0)}");
             sb.AppendLine("private_colormap: enabled=0");
             sb.AppendLine($"i440fxsupport: enabled={(i440fxCheck.IsChecked == true ? 1 : 0)}");
+            sb.AppendLine($"acpi: enabled={(acpiCheck.IsChecked == true ? 1 : 0)}");
             sb.AppendLine("time0: 0");
             sb.AppendLine($"newharddrivesupport: enabled={(newHDSupportCheck.IsChecked == true ? 1 : 0)}");
             sb.AppendLine($"slowdown_timer: enabled={(slowdownTimerCheck.IsChecked == true ? 1 : 0)}");

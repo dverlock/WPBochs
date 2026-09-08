@@ -119,14 +119,16 @@
         </Grid>
 
         <Popup x:Name="logPopup" IsLightDismissEnabled="True" Opened="logPopup_Opened">
-            <Border Background="#FF101010" BorderBrush="Gray" BorderThickness="1" Width="440" Height="260">
+            <Border Background="#FF101010" BorderBrush="Gray" BorderThickness="1" Width="450" Height="300">
                 <Grid Margin="8">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
                     <TextBlock x:Name="logText" Grid.Row="0" Text="Bochs output" Foreground="White" FontSize="20" Margin="0,0,0,6"/>
                     <RichEditBox x:Name="logTextBox" Grid.Row="1" IsReadOnly="True" AcceptsReturn="True" TextWrapping="Wrap" Background="Black" Foreground="White" ScrollViewer.VerticalScrollBarVisibility="Auto"/>
+                    <Button x:Name="saveLogButton" Content="Save log" Click="saveLogButton_Click" Grid.Row="2" VerticalAlignment="Top" HorizontalAlignment="Stretch"/>
                 </Grid>
             </Border>
         </Popup>

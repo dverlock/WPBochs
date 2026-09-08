@@ -332,6 +332,7 @@ class iofunctions {
 #define    VTIMERLOG       50
 #define    PLUGINLOG       51
 #define    ACPILOG         52
+#define    PCIIDELOG       53
 
 
 public:

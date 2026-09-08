@@ -203,17 +203,24 @@ bx_pci2isa_c::write(Bit32u address, Bit32u value, unsigned io_len)
   switch (address) {
     case 0x00b2:
       BX_P2I_THIS s.apmsts = 0x00;
+      if (bx_devices.pluginACPIController) {
+        ((bx_acpi_ctrl_c *)bx_devices.pluginACPIController)->generate_smi((Bit8u)value);
+      }
       break;
     case 0x00b3:
       BX_P2I_THIS s.apmsts = (value & 0xff);
       break;
     case 0x04d0:
       BX_P2I_THIS s.elcr1 = (value & 0xf8);
-      BX_ERROR(("write: ELCR1 changes have no effect yet"));
+      if (bx_devices.pluginPicDevice) {
+        ((bx_pic_c *)bx_devices.pluginPicDevice)->set_elcr(0, BX_P2I_THIS s.elcr1);
+      }
       break;
     case 0x04d1:
       BX_P2I_THIS s.elcr2 = (value & 0xde);
-      BX_ERROR(("write: ELCR2 changes have no effect yet"));
+      if (bx_devices.pluginPicDevice) {
+        ((bx_pic_c *)bx_devices.pluginPicDevice)->set_elcr(1, BX_P2I_THIS s.elcr2);
+      }
       break;
     case 0x0cf9:
       BX_ERROR(("write: CPU reset register not supported yet"));

@@ -84,9 +84,13 @@ bx_pci_c::init(void)
     BX_PCI_THIS pci_handler_id[i] = BX_MAX_PCI_DEVICES;  // not assigned
   }
 
-  // confAddr accepts dword i/o only
-  DEV_register_ioread_handler(this, read_handler, 0x0CF8, "i440FX", 4);
-  DEV_register_iowrite_handler(this, write_handler, 0x0CF8, "i440FX", 4);
+  // confAddr accepts byte word or dword i/o
+  for (i=0x0CF8; i<=0x0CFB; i++) {
+    DEV_register_ioread_handler(this, read_handler, i, "i440FX", 7);
+  }
+  for (i=0x0CF8; i<=0x0CFB; i++) {
+    DEV_register_iowrite_handler(this, write_handler, i, "i440FX", 7);
+  }
 
   for (i=0x0CFC; i<=0x0CFF; i++) {
     DEV_register_ioread_handler(this, read_handler, i, "i440FX", 7);
@@ -157,8 +161,12 @@ bx_pci_c::read(Bit32u address, unsigned io_len)
 
   switch (address) {
     case 0x0CF8:
+    case 0x0CF9:
+    case 0x0CFA:
+    case 0x0CFB:
       {
-        return BX_PCI_THIS s.i440fx.confAddr;
+        unsigned offset = address & 0x03;
+        return BX_PCI_THIS s.i440fx.confAddr >> (offset * 8);
       }
       break;
     case 0x0CFC:
@@ -213,13 +221,23 @@ bx_pci_c::write(Bit32u address, Bit32u value, unsigned io_len)
 
   switch (address) {
     case 0xCF8:
+    case 0xCF9:
+    case 0xCFA:
+    case 0xCFB:
       {
-        BX_PCI_THIS s.i440fx.confAddr = value;
-        if ((value & 0x80FFFF00) == 0x80000000) {
-          BX_DEBUG(("440FX PMC register 0x%02x selected", value & 0xfc));
-        } else if ((value & 0x80000000) == 0x80000000) {
+        unsigned offset = address & 0x03;
+        Bit32u mask = 0;
+        for (unsigned i = 0; (i < io_len) && ((offset + i) < 4); i++)
+          mask |= ((Bit32u) 0xFF << ((offset + i) * 8));
+        BX_PCI_THIS s.i440fx.confAddr = (BX_PCI_THIS s.i440fx.confAddr & ~mask) |
+                                         ((value << (offset * 8)) & mask);
+        if ((BX_PCI_THIS s.i440fx.confAddr & 0x80FFFF00) == 0x80000000) {
+          BX_DEBUG(("440FX PMC register 0x%02x selected", BX_PCI_THIS s.i440fx.confAddr & 0xfc));
+        } else if ((BX_PCI_THIS s.i440fx.confAddr & 0x80000000) == 0x80000000) {
           BX_DEBUG(("440FX request for bus 0x%02x device 0x%02x function 0x%02x",
-                    (value >> 16) & 0xFF, (value >> 11) & 0x1F, (value >> 8) & 0x07));
+                    (BX_PCI_THIS s.i440fx.confAddr >> 16) & 0xFF,
+                    (BX_PCI_THIS s.i440fx.confAddr >> 11) & 0x1F,
+                    (BX_PCI_THIS s.i440fx.confAddr >> 8) & 0x07));
         }
       }
       break;

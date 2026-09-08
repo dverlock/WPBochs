@@ -102,6 +102,7 @@ bx_pic_c::init(void)
   BX_PIC_THIS s.master_pic.lowest_priority = 7;
   BX_PIC_THIS s.master_pic.polled = 0;
   BX_PIC_THIS s.master_pic.rotate_on_autoeoi = 0;
+  BX_PIC_THIS s.master_pic.elcr = 0;
 
   BX_PIC_THIS s.slave_pic.single_PIC = 0;
   BX_PIC_THIS s.slave_pic.interrupt_offset = 0x70; /* IRQ8 = INT 0x70 */
@@ -123,6 +124,7 @@ bx_pic_c::init(void)
   BX_PIC_THIS s.slave_pic.lowest_priority = 7;
   BX_PIC_THIS s.slave_pic.polled = 0;
   BX_PIC_THIS s.slave_pic.rotate_on_autoeoi = 0;
+  BX_PIC_THIS s.slave_pic.elcr = 0;
 
   for (unsigned i=0; i<8; i++) { /* all IRQ lines low */
     BX_PIC_THIS s.master_pic.IRQ_line[i] = 0;
@@ -606,6 +608,15 @@ bx_pic_c::write(Bit32u address, Bit32u value, unsigned io_len)
   return;
 }
 
+  void
+bx_pic_c::set_elcr(bx_bool is_slave, Bit8u value)
+{
+  if (is_slave)
+    BX_PIC_THIS s.slave_pic.elcr = value;
+  else
+    BX_PIC_THIS s.master_pic.elcr = value;
+}
+
 // new IRQ signal handling routines
 
   void
@@ -824,7 +835,8 @@ bx_pic_c::IAC(void)
 
   BX_SET_INTR(0);
   BX_PIC_THIS s.master_pic.INT = 0;
-  BX_PIC_THIS s.master_pic.irr &= ~(1 << BX_PIC_THIS s.master_pic.irq);
+  if (!(BX_PIC_THIS s.master_pic.elcr & (1 << BX_PIC_THIS s.master_pic.irq)))
+    BX_PIC_THIS s.master_pic.irr &= ~(1 << BX_PIC_THIS s.master_pic.irq);
   // In autoeoi mode don't set the isr bit.
   if(!BX_PIC_THIS s.master_pic.auto_eoi)
     BX_PIC_THIS s.master_pic.isr |= (1 << BX_PIC_THIS s.master_pic.irq);
@@ -840,7 +852,8 @@ bx_pic_c::IAC(void)
     BX_PIC_THIS s.master_pic.IRQ_line[2] = 0;
     irq    = BX_PIC_THIS s.slave_pic.irq;
     vector = irq + BX_PIC_THIS s.slave_pic.interrupt_offset;
-    BX_PIC_THIS s.slave_pic.irr &= ~(1 << BX_PIC_THIS s.slave_pic.irq);
+    if (!(BX_PIC_THIS s.slave_pic.elcr & (1 << BX_PIC_THIS s.slave_pic.irq)))
+      BX_PIC_THIS s.slave_pic.irr &= ~(1 << BX_PIC_THIS s.slave_pic.irq);
     // In autoeoi mode don't set the isr bit.
     if(!BX_PIC_THIS s.slave_pic.auto_eoi)
       BX_PIC_THIS s.slave_pic.isr |= (1 << BX_PIC_THIS s.slave_pic.irq);

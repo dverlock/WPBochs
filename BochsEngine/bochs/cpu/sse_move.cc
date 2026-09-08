@@ -265,7 +265,7 @@ void BX_CPU_C::FXRSTOR(bxInstruction_c *i)
   {
       if(tag_byte & tag_byte_mask) {
           bx_fpu_reg_t *fpu_reg = (bx_fpu_reg_t *) &(BX_FPU_REG(index));
-          twd = FPU_tagof(fpu_reg);
+          twd |= FPU_tagof(fpu_reg);
       }
       else {
          twd |= FPU_TAG_EMPTY;

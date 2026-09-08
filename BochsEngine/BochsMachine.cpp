@@ -58,7 +58,14 @@ BochsMachine::BochsMachine()
     : m_currentButtonState(0), m_panicResolved(false), m_panicChoice(0)
 {
     s_activeMachine = this;
+    WPBochsGui::SetAcpiShutdownCallback(&BochsMachine::AcpiShutdownThunk);
     WPB_TRACE("BochsMachine constructed");
+}
+
+void BochsMachine::AcpiShutdownThunk()
+{
+    auto machine = s_activeMachine;
+    if (machine != nullptr) machine->AcpiShutdownRequested();
 }
 
 void BochsMachine::Start(String^ bochsrcPath)

@@ -91,6 +91,8 @@ namespace WPBochs
                     if (imageCreatorPage != null) imageCreatorPage.ContinueFileSavePicker(continuationArgs);
                     MainPage mainPage = rootFrame.Content as MainPage;
                     if (mainPage != null) mainPage.ContinueFileSavePicker(continuationArgs);
+                    EmulatorPage emulatorPage = rootFrame.Content as EmulatorPage;
+                    if (emulatorPage != null) emulatorPage.ContinueFileSavePicker(continuationArgs);
                 }
             }
         }

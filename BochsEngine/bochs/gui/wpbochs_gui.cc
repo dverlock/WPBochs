@@ -55,6 +55,7 @@ std::vector<QueuedMouse> s_mouseQueue;
 
 std::atomic<bool> s_resetRequested(false);
 std::atomic<bool> s_shutdownRequested(false);
+WPBochsGui::AcpiShutdownCallback s_acpiShutdownCallback = nullptr;
 
 std::mutex s_pauseMutex;
 std::condition_variable s_pauseCv;
@@ -134,6 +135,17 @@ void ShutdownNow()
   wpb_flush_all();
   std::unique_lock<std::mutex> shutdownLock(s_pauseMutex);
   s_pauseCv.wait(shutdownLock, [] { return false; });
+}
+
+void SetAcpiShutdownCallback(AcpiShutdownCallback callback)
+{
+  s_acpiShutdownCallback = callback;
+}
+
+void NotifyAcpiShutdown()
+{
+  if (s_acpiShutdownCallback != nullptr) s_acpiShutdownCallback();
+  s_shutdownRequested = true;
 }
 
 void RequestPause(bool paused)

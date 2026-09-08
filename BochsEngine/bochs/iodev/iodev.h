@@ -313,6 +313,7 @@ public:
   bx_hard_drive_stub_c *pluginHardDrive;
   bx_devmodel_c    *pluginSB16Device;
   bx_devmodel_c    *pluginACPIController;
+  bx_devmodel_c    *pluginPciIdeController;
   bx_ne2k_stub_c   *pluginNE2kDevice;
   bx_g2h_c         *g2h;
   bx_devmodel_c    *pluginExtFpuIrq;
@@ -387,6 +388,7 @@ private:
 #include "iodev/pci.h"
 #include "iodev/pci2isa.h"
 #include "iodev/acpi.h"
+#include "iodev/pci_ide.h"
 #if BX_PCI_VGA_SUPPORT
 #include "iodev/pcivga.h"
 #endif
@@ -405,6 +407,8 @@ private:
 #include "iodev/harddrv.h"
 #include "iodev/vmware3.h"
 #include "iodev/vmware4.h"
+#include "iodev/vpc.h"
+#include "iodev/vbox.h"
 #if BX_IODEBUG_SUPPORT
 #   include "iodev/iodebug.h"
 #endif

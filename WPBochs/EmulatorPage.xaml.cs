@@ -2,9 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
+using System.Text;
 using System.Threading.Tasks;
 using Windows.Foundation;
 using Windows.Storage;
+using Windows.Storage.Pickers;
 using Windows.Storage.Streams;
 using Windows.UI;
 using Windows.UI.Core;
@@ -34,13 +36,15 @@ namespace WPBochs
         private bool _networkEnabled = true;
         private bool _paused, _machineStopped, _twoFingerTapConsumed;
         private ulong _lastInstructionCount;
-        private const double TapMoveThreshold = 12.0, KeyHeight = 34;
+        private const double TapMoveThreshold = 12.0, KeyHeight = 34, NavButtonHeight = 24;
         private readonly Dictionary<uint, TouchInfo> _touches = new Dictionary<uint, TouchInfo>();
         private readonly Dictionary<uint, DispatcherTimer> _holdTimers = new Dictionary<uint, DispatcherTimer>();
         private readonly List<List<StackPanel>> _keyboardPages = new List<List<StackPanel>>();
         private int _currentKeyboardPage, _logTextLength;
         private const int MaxLogLines = 100;
         private DisplayRequest _displayRequest;
+        private string _bochsrcText = "";
+        private string _pendingPanicLogText;
 
         private class TouchInfo { public Point StartPosition; public Point LastPosition; public bool MovedBeyondThreshold; public bool Dragging; }
 
@@ -60,6 +64,7 @@ namespace WPBochs
             {
                 StorageFile bochsrcFile = await StorageFile.GetFileFromPathAsync(bochsrcPath);
                 string bochsrcText = await FileIO.ReadTextAsync(bochsrcFile);
+                _bochsrcText = bochsrcText;
                 bochsrcLines = bochsrcText.Split('\n');
             }
             _mouseEnabled = false;
@@ -72,11 +77,13 @@ namespace WPBochs
             }
             if (!_mouseEnabled) mouseToggleButton.Visibility = Visibility.Collapsed;
             networkToggleButton.Visibility = networkAvailable ? Visibility.Visible : Visibility.Collapsed;
-            AcquireWakelock();
+            if (_displayRequest == null) _displayRequest = new DisplayRequest();
+            _displayRequest.RequestActive();
             DebugWriteLine("Creating a BochsMachine");
             _machine = new BochsMachine();
             _machine.LogUpdated += Machine_LogUpdated;
             _machine.PanicRequested += Machine_PanicRequested;
+            _machine.AcpiShutdownRequested += Machine_AcpiShutdownRequested;
             if (launchParams != null && launchParams.ExternalMediaFiles != null)
             {
                 foreach (StorageFile file in launchParams.ExternalMediaFiles)
@@ -127,14 +134,9 @@ namespace WPBochs
             {
                 machine.LogUpdated -= Machine_LogUpdated;
                 machine.PanicRequested -= Machine_PanicRequested;
+                machine.AcpiShutdownRequested -= Machine_AcpiShutdownRequested;
                 machine.RequestShutdown();
             }
-        }
-
-        private void AcquireWakelock()
-        {
-            if (_displayRequest == null) _displayRequest = new DisplayRequest();
-            _displayRequest.RequestActive();
         }
 
         private void AllowScreenTurnoff()
@@ -179,11 +181,11 @@ namespace WPBochs
             if (_machine == null) return;
             _paused = !_paused;
             _machine.SetPaused(_paused);
-            if (_paused) { ApplyGrayscaleToDisplay(); pauseIcon.Source = new BitmapImage(new Uri("ms-appx:///Assets/ToolbarIcons/resume.png")); }
-            else { RestoreColorDisplay(); pauseIcon.Source = new BitmapImage(new Uri("ms-appx:///Assets/ToolbarIcons/pause.png")); }
+            if (_paused) ShowPausedFrame();
+            else ShowLiveFrame();
         }
 
-        private void ApplyGrayscaleToDisplay()
+        private void ShowPausedFrame()
         {
             if (_bitmap == null || _frameBuffer == null) return;
             if (_grayscaleScratch == null || _grayscaleScratch.Length != _frameBuffer.Length) _grayscaleScratch = new byte[_frameBuffer.Length];
@@ -200,13 +202,15 @@ namespace WPBochs
             }
             using (Stream stream = _bitmap.PixelBuffer.AsStream()) { stream.Write(_grayscaleScratch, 0, _grayscaleScratch.Length); }
             _bitmap.Invalidate();
+            pauseIcon.Source = new BitmapImage(new Uri("ms-appx:///Assets/ToolbarIcons/resume.png"));
         }
 
-        private void RestoreColorDisplay()
+        private void ShowLiveFrame()
         {
             if (_bitmap == null || _frameBuffer == null) return;
             using (Stream stream = _bitmap.PixelBuffer.AsStream()) { stream.Write(_frameBuffer, 0, _frameBuffer.Length); }
             _bitmap.Invalidate();
+            pauseIcon.Source = new BitmapImage(new Uri("ms-appx:///Assets/ToolbarIcons/pause.png"));
         }
 
         private void IpsTimer_Tick(object sender, object e)
@@ -247,7 +251,7 @@ namespace WPBochs
                 return;
             }
             if (_touches.Count > 2) return;
-            DispatcherTimer holdTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(1000) };
+            DispatcherTimer holdTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(500) };
             holdTimer.Tick += (s, args) => HoldTimer_Tick(id);
             _holdTimers[id] = holdTimer;
             holdTimer.Start();
@@ -324,6 +328,7 @@ namespace WPBochs
         private void keyboardToggleButton_Click(object sender, RoutedEventArgs e) => keyboardOverlay.Visibility = keyboardOverlay.Visibility == Visibility.Visible ? Visibility.Collapsed : Visibility.Visible;
 
         private readonly List<LogEntry> _logBuffer = new List<LogEntry>();
+        private readonly List<LogEntry> _fullLogBuffer = new List<LogEntry>();
         private readonly List<LogEntry> _pendingLogLines = new List<LogEntry>();
         private readonly object _pendingLogLock = new object();
         private DispatcherTimer _logFlushTimer;
@@ -342,6 +347,16 @@ namespace WPBochs
 
         private async void shutdownButton_Click(object sender, RoutedEventArgs e) { StopMachine(); await Task.Delay(1000); Application.Current.Exit(); }
 
+        private async void Machine_AcpiShutdownRequested()
+        {
+            await Dispatcher.RunAsync(CoreDispatcherPriority.Normal, async () =>
+            {
+                StopMachine();
+                await Task.Delay(1000);
+                Application.Current.Exit();
+            });
+        }
+
         private void Machine_LogUpdated(string line, bool isError)
         {
             DebugWriteLine("Machine: " + line);
@@ -353,7 +368,7 @@ namespace WPBochs
             List<LogEntry> pending;
             lock (_pendingLogLock) { if (_pendingLogLines.Count == 0) return; pending = new List<LogEntry>(_pendingLogLines); _pendingLogLines.Clear();}
             logText.Text = "Last " + MaxLogLines + " lines of Bochs output";
-            foreach (LogEntry entry in pending) { _logBuffer.Add(entry); if (_logBuffer.Count > MaxLogLines) _logBuffer.RemoveAt(0); }
+            foreach (LogEntry entry in pending) { _logBuffer.Add(entry); if (_logBuffer.Count > MaxLogLines) _logBuffer.RemoveAt(0); _fullLogBuffer.Add(entry); }
 
             if (logPopup.IsOpen)
             {
@@ -382,9 +397,21 @@ namespace WPBochs
         private void RebuildLogTextBox()
         {
             logTextBox.IsReadOnly = false;
-            logTextBox.Document.SetText(TextSetOptions.None, "");
-            _logTextLength = 0;
-            foreach (LogEntry entry in _logBuffer) AppendLogLine(entry.Line, entry.IsError);
+            ITextDocument doc = logTextBox.Document;
+            StringBuilder sb = new StringBuilder();
+            foreach (LogEntry entry in _logBuffer) sb.Append(entry.Line).Append('\r');
+            doc.SetText(TextSetOptions.None, sb.ToString());
+            int offset = 0;
+            foreach (LogEntry entry in _logBuffer)
+            {
+                if (entry.IsError)
+                {
+                    ITextRange range = doc.GetRange(offset, offset + entry.Line.Length);
+                    range.CharacterFormat.ForegroundColor = Colors.OrangeRed;
+                }
+                offset += entry.Line.Length + 1;
+            }
+            _logTextLength = offset;
             logTextBox.IsReadOnly = true;
         }
 
@@ -397,11 +424,13 @@ namespace WPBochs
                 if (_machine != machine) return;
                 try
                 {
-                    RadioButton contRadio = new RadioButton { Content = "Continue execution", IsChecked = true };
+                    RadioButton saveAndExitRadio = new RadioButton { Content = "Save debug log and exit (recommended)", IsChecked = true };
+                    RadioButton contRadio = new RadioButton { Content = "Continue execution" };
                     RadioButton alwaysContRadio = new RadioButton { Content = "Continue execution and don't ask again" };
                     RadioButton dieRadio = new RadioButton { Content = "Stop execution and exit" };
                     StackPanel panel = new StackPanel();
                     panel.Children.Add(new TextBlock { Text = $"Device: {device}{Environment.NewLine}Message: {message}{Environment.NewLine}A PANIC has occurred. Do you want to:", TextWrapping = TextWrapping.Wrap });
+                    panel.Children.Add(saveAndExitRadio);
                     panel.Children.Add(contRadio);
                     panel.Children.Add(alwaysContRadio);
                     panel.Children.Add(new TextBlock { Text = "This affects only PANIC events from device " + device, TextWrapping = TextWrapping.Wrap, FontSize = 12 });
@@ -418,7 +447,38 @@ namespace WPBochs
                     if (_machine != machine) { machine.ResolvePanic(0); return; }
                     if (result == ContentDialogResult.Primary)
                     {
-                        if (contRadio.IsChecked == true) machine.ResolvePanic(0);
+                        if (saveAndExitRadio.IsChecked == true)
+                        {
+                            machine.ResolvePanic(2);
+                            StopMachine();
+                            Windows.ApplicationModel.PackageVersion version = Windows.ApplicationModel.Package.Current.Id.Version;
+                            StringBuilder sb = new StringBuilder();
+                            sb.AppendLine("Sorry, WPBochs encountered an execution error and fired a PANIC.");
+                            sb.AppendLine("If this is the first time you get this error, restart WPBochs and try again. If the PANIC happens on the same spot again, open an issue along with this log file and more info about where the PANIC happened (e.g. OS/app you were running) at https://github.com/dverlock/WPBochs/issues.");
+                            sb.AppendLine();
+                            sb.AppendLine("Note: The rest of this log file is for debugging.");
+                            sb.AppendLine();
+                            string debug =
+#if DEBUG
+                "Debug ";
+#else
+                "";
+#endif
+                            sb.AppendLine($"{debug}Version: {version.Major}.{version.Minor}.{version.Build}.{version.Revision}");
+                            sb.AppendLine($"Date/time: {DateTime.Now:dd.MM.yyyy HH:mm:ss}");
+                            sb.AppendLine($"Panic message: {device} {message}");
+                            sb.AppendLine("Config file:");
+                            sb.AppendLine(_bochsrcText);
+                            sb.AppendLine("Log:");
+                            foreach (LogEntry entry in _fullLogBuffer) sb.AppendLine(entry.Line);
+                            _pendingPanicLogText = sb.ToString();
+                            FileSavePicker picker = new FileSavePicker();
+                            picker.SuggestedStartLocation = PickerLocationId.DocumentsLibrary;
+                            picker.SuggestedFileName = "wpb-panic-" + DateTime.Now.ToString("dd.MM.yyyy-HH-mm");
+                            picker.FileTypeChoices.Add("Log file", new List<string> { ".log" });
+                            picker.PickSaveFileAndContinue();
+                        }
+                        else if (contRadio.IsChecked == true) machine.ResolvePanic(0);
                         else if (alwaysContRadio.IsChecked == true) machine.ResolvePanic(1);
                         else if (dieRadio.IsChecked == true)
                         {
@@ -436,6 +496,42 @@ namespace WPBochs
                     machine.ResolvePanic(0);
                 }
             });
+        }
+
+        public async void ContinueFileSavePicker(Windows.ApplicationModel.Activation.FileSavePickerContinuationEventArgs args)
+        {
+            string filetype = args.ContinuationData.ContainsKey("filetype") ? (string)args.ContinuationData["filetype"] : "panic";
+            if (filetype == "savelog")
+            {
+                StringBuilder sb = new StringBuilder();
+                sb.AppendLine($"WPBochs log saved {DateTime.Now:dd.MM.yyyy HH:mm:ss}");
+                sb.AppendLine("Config file:");
+                sb.AppendLine(_bochsrcText);
+                sb.AppendLine("Log:");
+                foreach (LogEntry entry in _fullLogBuffer) sb.AppendLine(entry.Line);
+                try { if (args.File != null) await FileIO.WriteTextAsync(args.File, sb.ToString()); }
+                catch (Exception ex) { DebugWriteLine("Failed to save log: " + ex); }
+                _paused = false;
+                if (_machine != null) _machine.SetPaused(false);
+                return;
+            }
+            try { if (args.File != null && _pendingPanicLogText != null) await FileIO.WriteTextAsync(args.File, _pendingPanicLogText); }
+            catch (Exception ex) { DebugWriteLine("Failed to save panic log: " + ex); }
+            await Task.Delay(500);
+            Application.Current.Exit();
+        }
+
+        private void saveLogButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (_machine == null) return;
+            _paused = true;
+            _machine.SetPaused(true);
+            FileSavePicker picker = new FileSavePicker();
+            picker.SuggestedStartLocation = PickerLocationId.DocumentsLibrary;
+            picker.SuggestedFileName = "wpb-log-" + DateTime.Now.ToString("dd.MM.yyyy-HH.mm.ss");
+            picker.FileTypeChoices.Add("Log file", new List<string> { ".log" });
+            picker.ContinuationData["filetype"] = "savelog";
+            picker.PickSaveFileAndContinue();
         }
 
         private void BuildKeyboard()
@@ -509,8 +605,8 @@ namespace WPBochs
         private readonly List<TextBlock> _keyboardPageIndicators = new List<TextBlock>();
         private StackPanel CreateNavRow()
         {
-            Button prevButton = new Button { Content = "◀", Width = 70, MinWidth = 70, MaxWidth = 70, Height = KeyHeight, MinHeight = KeyHeight, MaxHeight = KeyHeight, Style = (Style)Resources["KeyButtonStyle"] };
-            Button nextButton = new Button { Content = "▶", Width = 70, MinWidth = 70, MaxWidth = 70, Height = KeyHeight, MinHeight = KeyHeight, MaxHeight = KeyHeight, Style = (Style)Resources["KeyButtonStyle"] };
+            Button prevButton = new Button { Content = "◀", Width = 70, MinWidth = 70, MaxWidth = 70, Height = NavButtonHeight, MinHeight = NavButtonHeight, MaxHeight = NavButtonHeight, Style = (Style)Resources["KeyButtonStyle"] };
+            Button nextButton = new Button { Content = "▶", Width = 70, MinWidth = 70, MaxWidth = 70, Height = NavButtonHeight, MinHeight = NavButtonHeight, MaxHeight = NavButtonHeight, Style = (Style)Resources["KeyButtonStyle"] };
             TextBlock indicator = new TextBlock { Text = PageIndicatorText(), Foreground = new SolidColorBrush(Colors.White), FontSize = 14, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(10, 0, 10, 0), TextAlignment = TextAlignment.Center, Width = 60 };
             prevButton.Click += (s, e) => ShowKeyboardPage(_currentKeyboardPage - 1);
             nextButton.Click += (s, e) => ShowKeyboardPage(_currentKeyboardPage + 1);
@@ -568,7 +664,7 @@ namespace WPBochs
                 bool isDown = !wasDown;
                 _modifierToggleState[code] = isDown;
                 if (isDown) button.Background = ModifierActiveBrush;
-                else button.ClearValue(Button.BackgroundProperty);
+                else button.ClearValue(BackgroundProperty);
                 if (_machine != null) _machine.KeyEvent(code, isDown);
                 return;
             }

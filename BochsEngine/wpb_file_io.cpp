@@ -22,12 +22,16 @@ public:
 
 namespace {
 
+const unsigned long long kMaxCachedFileSize = 8ull * 1024 * 1024;
+
 struct ExternalHandle
 {
     IRandomAccessStream^ stream;
     std::vector<byte> data;
     long long pos = 0;
+    long long size = 0;
     bool dirty = false;
+    bool cached = true;
 };
 
 byte* GetRawBufferPointer(IBuffer^ buffer)
@@ -84,18 +88,23 @@ int wpb_open(const char* path, int flags)
 
     ExternalHandle handle;
     handle.stream = stream;
+    handle.size = (long long)stream->Size;
 
-    unsigned int size = (unsigned int)stream->Size;
-    handle.data.resize(size);
-    if (size > 0) {
-        stream->Seek(0);
-        Buffer^ winBuffer = ref new Buffer(size);
-        IBuffer^ result = Concurrency::create_task(stream->ReadAsync(winBuffer, size, InputStreamOptions::None)).get();
-        unsigned int bytesRead = result->Length;
-        if (bytesRead > 0) {
-            byte* raw = GetRawBufferPointer(result);
-            memcpy(handle.data.data(), raw, bytesRead);
+    if (stream->Size <= kMaxCachedFileSize) {
+        unsigned int size = (unsigned int)stream->Size;
+        handle.data.resize(size);
+        if (size > 0) {
+            stream->Seek(0);
+            Buffer^ winBuffer = ref new Buffer(size);
+            IBuffer^ result = Concurrency::create_task(stream->ReadAsync(winBuffer, size, InputStreamOptions::None)).get();
+            unsigned int bytesRead = result->Length;
+            if (bytesRead > 0) {
+                byte* raw = GetRawBufferPointer(result);
+                memcpy(handle.data.data(), raw, bytesRead);
+            }
         }
+    } else {
+        handle.cached = false;
     }
 
     std::lock_guard<std::mutex> lock(s_mutex);
@@ -114,7 +123,11 @@ int wpb_close(int fd)
         handle = std::move(it->second);
         s_openHandles.erase(it);
     }
-    FlushHandleToStream(handle);
+    if (handle.cached) {
+        FlushHandleToStream(handle);
+    } else if (handle.dirty) {
+        Concurrency::create_task(handle.stream->FlushAsync()).get();
+    }
     return 0;
 }
 
@@ -127,7 +140,7 @@ long long wpb_lseek(int fd, long long offset, int whence)
     ExternalHandle& handle = it->second;
     long long base = 0;
     if (whence == SEEK_CUR) base = handle.pos;
-    else if (whence == SEEK_END) base = (long long)handle.data.size();
+    else if (whence == SEEK_END) base = handle.cached ? (long long)handle.data.size() : handle.size;
     handle.pos = base + offset;
     return handle.pos;
 }
@@ -139,6 +152,25 @@ long long wpb_read(int fd, void* buf, long long count)
     if (it == s_openHandles.end()) return (long long)::_read(fd, buf, (unsigned int)count);
 
     ExternalHandle& handle = it->second;
+
+    if (!handle.cached) {
+        if (handle.pos < 0 || handle.pos >= handle.size) return 0;
+        long long available = handle.size - handle.pos;
+        long long toRead = count < available ? count : available;
+        if (toRead <= 0) return 0;
+
+        handle.stream->Seek((unsigned long long)handle.pos);
+        Buffer^ winBuffer = ref new Buffer((unsigned int)toRead);
+        IBuffer^ result = Concurrency::create_task(handle.stream->ReadAsync(winBuffer, (unsigned int)toRead, InputStreamOptions::None)).get();
+        unsigned int bytesRead = result->Length;
+        if (bytesRead > 0) {
+            byte* raw = GetRawBufferPointer(result);
+            memcpy(buf, raw, bytesRead);
+        }
+        handle.pos += bytesRead;
+        return bytesRead;
+    }
+
     if (handle.pos < 0 || handle.pos >= (long long)handle.data.size()) return 0;
 
     long long available = (long long)handle.data.size() - handle.pos;
@@ -155,6 +187,20 @@ long long wpb_write(int fd, const void* buf, long long count)
     if (it == s_openHandles.end()) return (long long)::_write(fd, buf, (unsigned int)count);
 
     ExternalHandle& handle = it->second;
+
+    if (!handle.cached) {
+        handle.stream->Seek((unsigned long long)handle.pos);
+        Buffer^ winBuffer = ref new Buffer((unsigned int)count);
+        winBuffer->Length = (unsigned int)count;
+        byte* raw = GetRawBufferPointer(winBuffer);
+        memcpy(raw, buf, (size_t)count);
+        unsigned int written = Concurrency::create_task(handle.stream->WriteAsync(winBuffer)).get();
+        handle.pos += written;
+        if (handle.pos > handle.size) handle.size = handle.pos;
+        handle.dirty = true;
+        return written;
+    }
+
     long long endPos = handle.pos + count;
     if (endPos > (long long)handle.data.size()) handle.data.resize((size_t)endPos);
 
@@ -169,7 +215,7 @@ long long wpb_length(int fd)
     std::lock_guard<std::mutex> lock(s_mutex);
     auto it = s_openHandles.find(fd);
     if (it == s_openHandles.end()) return -1;
-    return (long long)it->second.data.size();
+    return it->second.cached ? (long long)it->second.data.size() : it->second.size;
 }
 
 void wpb_flush_all()
@@ -181,6 +227,11 @@ void wpb_flush_all()
     }
     for (auto* handle : handles) {
         std::lock_guard<std::mutex> lock(s_mutex);
-        FlushHandleToStream(*handle);
+        if (handle->cached) {
+            FlushHandleToStream(*handle);
+        } else if (handle->dirty) {
+            Concurrency::create_task(handle->stream->FlushAsync()).get();
+            handle->dirty = false;
+        }
     }
 }

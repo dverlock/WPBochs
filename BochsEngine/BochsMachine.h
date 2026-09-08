@@ -8,6 +8,7 @@ namespace BochsEngine
 {
     public delegate void LogLineHandler(Platform::String^ line, bool isError);
     public delegate void PanicHandler(Platform::String^ device, Platform::String^ message);
+    public delegate void AcpiShutdownHandler();
 
     public ref class BochsMachine sealed
     {
@@ -43,10 +44,13 @@ namespace BochsEngine
 
         event LogLineHandler^ LogUpdated;
 
+        event AcpiShutdownHandler^ AcpiShutdownRequested;
+
     private:
         void RunEmulator(const std::string& bochsrcPath);
         static void LogCallbackThunk(int stream, const char *line);
         static int PanicNotifyThunk(int code);
+        static void AcpiShutdownThunk();
         int BlockForPanicChoice(const char *device, const char *message);
         static void TraceCheckpoint(const char *msg);
 

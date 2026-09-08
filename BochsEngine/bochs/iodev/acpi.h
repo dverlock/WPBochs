@@ -41,6 +41,7 @@ public:
   virtual void reset(unsigned type);
 
   BX_ACPI_SMF void timer(void);
+  BX_ACPI_SMF void generate_smi(Bit8u value);
 
 private:
   static Bit32u read_handler(void *this_ptr, Bit32u address, unsigned io_len);

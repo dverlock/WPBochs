@@ -25,4 +25,8 @@ void ShutdownNow();
 
 void RequestPause(bool paused);
 
+typedef void (*AcpiShutdownCallback)(void);
+void SetAcpiShutdownCallback(AcpiShutdownCallback callback);
+void NotifyAcpiShutdown();
+
 }

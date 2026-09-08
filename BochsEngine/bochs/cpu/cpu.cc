@@ -743,6 +743,7 @@ BX_CPU_C::prefetch(void)
 
   if (((Bit32u)temp_rip) > temp_limit) {
     BX_PANIC(("prefetch: RIP > CS.limit"));
+    exception(BX_GP_EXCEPTION, 0, 0);
     }
 
 #if BX_SUPPORT_PAGING

@@ -114,12 +114,15 @@
     <ClCompile Include="bochs/iodev/harddrv.cc" />
     <ClCompile Include="bochs/iodev/keyboard.cc" />
     <ClCompile Include="bochs/iodev/acpi.cc" />
+    <ClCompile Include="bochs/iodev/pci_ide.cc" />
     <ClCompile Include="bochs/iodev/pci.cc" />
     <ClCompile Include="bochs/iodev/pci2isa.cc" />
     <ClCompile Include="bochs/iodev/biosdev.cc" />
     <ClCompile Include="bochs/iodev/extfpuirq.cc" />
     <ClCompile Include="bochs/iodev/virt_timer.cc" />
     <ClCompile Include="bochs/iodev/vmware3.cc" />
+    <ClCompile Include="bochs/iodev/vpc.cc" />
+    <ClCompile Include="bochs/iodev/vbox.cc" />
     <ClCompile Include="bochs/iodev/serial.cc" />
     <ClCompile Include="bochs/iodev/parallel.cc" />
     <ClCompile Include="bochs/iodev/pic.cc" />

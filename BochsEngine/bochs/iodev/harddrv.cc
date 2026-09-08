@@ -274,6 +274,8 @@ bx_hard_drive_c::init(void)
 
         bool is_vmware3_image = false;
         bool is_vmware4_image = false;
+        bool is_vhd_image = false;
+        bool is_vdi_image = false;
         {
           int probe_fd = wpb_open(diskopt->Opath->getptr(), O_RDONLY
 #ifdef O_BINARY
@@ -281,13 +283,21 @@ bx_hard_drive_c::init(void)
 #endif
             );
           if (probe_fd >= 0) {
-            char magic[4] = {0, 0, 0, 0};
-            if (wpb_read(probe_fd, magic, 4) == 4) {
+            char magic[64];
+            memset(magic, 0, sizeof(magic));
+            long long magic_read = wpb_read(probe_fd, magic, sizeof(magic));
+            if (magic_read >= 4) {
               if (magic[0] == 'C' && magic[1] == 'O' && magic[2] == 'W' && magic[3] == 'D') {
                 is_vmware3_image = true;
                 }
               else if (magic[0] == 'K' && magic[1] == 'D' && magic[2] == 'M' && magic[3] == 'V') {
                 is_vmware4_image = true;
+                }
+              else if (magic_read >= 8 && memcmp(magic, "conectix", 8) == 0) {
+                is_vhd_image = true;
+                }
+              else if (magic_read >= 37 && memcmp(magic, "<<< Oracle VirtualBox Disk Image >>>", 37) == 0) {
+                is_vdi_image = true;
                 }
               }
             wpb_close(probe_fd);
@@ -310,6 +320,26 @@ bx_hard_drive_c::init(void)
           channels[channel].drives[device].hard_drive = new vmware4_image_t();
 
           /* open hard drive image file (geometry comes from the vmware4 header) */
+          if ((BX_HD_THIS channels[channel].drives[device].hard_drive->open(diskopt->Opath->getptr ())) < 0) {
+            BX_PANIC(("ata%d-%d: could not open hard drive image file '%s'", channel, device, diskopt->Opath->getptr ()));
+            }
+          }
+        else if (is_vhd_image) {
+          BX_INFO(("HD on ata%d-%d: '%s' 'vpc' mode ", channel, device,
+                                  diskopt->Opath->getptr ()));
+          channels[channel].drives[device].hard_drive = new vpc_image_t();
+
+          /* open hard drive image file (geometry comes from the vhd footer) */
+          if ((BX_HD_THIS channels[channel].drives[device].hard_drive->open(diskopt->Opath->getptr ())) < 0) {
+            BX_PANIC(("ata%d-%d: could not open hard drive image file '%s'", channel, device, diskopt->Opath->getptr ()));
+            }
+          }
+        else if (is_vdi_image) {
+          BX_INFO(("HD on ata%d-%d: '%s' 'vbox' mode ", channel, device,
+                                  diskopt->Opath->getptr ()));
+          channels[channel].drives[device].hard_drive = new vbox_image_t();
+
+          /* open hard drive image file (geometry comes from the vdi header) */
           if ((BX_HD_THIS channels[channel].drives[device].hard_drive->open(diskopt->Opath->getptr ())) < 0) {
             BX_PANIC(("ata%d-%d: could not open hard drive image file '%s'", channel, device, diskopt->Opath->getptr ()));
             }

@@ -80,6 +80,7 @@
                 <StackPanel Grid.Row="1" Grid.Column="0" Margin="2">
                     <CheckBox x:Name="mouseCheck" Content="Mouse support" IsChecked="True" HorizontalAlignment="Stretch"/>
                     <CheckBox x:Name="i440fxCheck" Content="i440fx emulation" Checked="ExperimentalFeatureCheck_Checked" HorizontalAlignment="Stretch"/>
+                    <CheckBox x:Name="acpiCheck" Content="ACPI emulation" Checked="ExperimentalFeatureCheck_Checked" HorizontalAlignment="Stretch"/>
                     <CheckBox x:Name="sb16Check" Content="Sound Blaster 16 emulation" Checked="ExperimentalFeatureCheck_Checked" HorizontalAlignment="Stretch"/>
                     <CheckBox x:Name="fpuCheck" Content="FPU emulation" IsChecked="True" HorizontalAlignment="Stretch"/>
                     <CheckBox x:Name="ne2kCheck" Content="NE2000 networking" HorizontalAlignment="Stretch" Checked="ExperimentalFeatureCheck_Checked"/>

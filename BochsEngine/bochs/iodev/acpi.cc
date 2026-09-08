@@ -23,6 +23,7 @@
 #define BX_PLUGGABLE
 
 #include "bochs.h"
+#include "gui/wpbochs_gui.h"
 #if BX_PCI_SUPPORT
 
 #define LOG_THIS theACPIController->
@@ -47,6 +48,10 @@ const Bit8u acpi_sm_iomask[16] = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 0, 2, 0, 0, 0
 #define PWRBTN_EN (1 << 8)
 #define GBL_EN (1 << 5)
 #define TMROF_EN (1 << 0)
+
+#define SCI_EN (1 << 0)
+#define ACPI_ENABLE 0xf1
+#define ACPI_DISABLE 0xf0
 
 #define SUS_EN (1 << 13)
 
@@ -246,6 +251,16 @@ bx_acpi_ctrl_c::pm_update_sci(void)
     }
 }
 
+  void
+bx_acpi_ctrl_c::generate_smi(Bit8u value)
+{
+  if (value == ACPI_ENABLE) {
+    BX_ACPI_THIS s.pmcntrl |= SCI_EN;
+  } else if (value == ACPI_DISABLE) {
+    BX_ACPI_THIS s.pmcntrl &= ~SCI_EN;
+  }
+}
+
   // static IO port read callback handler
   // redirects to non-static class handler to avoid virtual functions
 
@@ -368,8 +383,7 @@ bx_acpi_ctrl_c::write(Bit32u address, Bit32u value, unsigned io_len)
             switch (sus_typ) {
               case 0: // soft power off
                 bx_user_quit = 1;
-                LOG_THIS setonoff(LOGLEV_PANIC, ACT_FATAL);
-                BX_PANIC(("ACPI control: soft power off"));
+                WPBochsGui::NotifyAcpiShutdown();
                 break;
               case 1:
                 BX_INFO(("ACPI control: suspend to ram"));
