@@ -209,11 +209,16 @@ bx_nat_pktmover_c::DrainQueue(void)
   CheckRetransmits();
 }
 
+#define NAT_MIN_FRAME_LEN 60
+
 void
 bx_nat_pktmover_c::queue_frame(const Bit8u *frame, unsigned len)
 {
   std::lock_guard<std::mutex> lock(rx_mutex);
   rx_queue.emplace_back(frame, frame + len);
+  if (len < NAT_MIN_FRAME_LEN) {
+    rx_queue.back().resize(NAT_MIN_FRAME_LEN, 0);
+  }
 }
 
 void
@@ -284,7 +289,9 @@ bx_nat_pktmover_c::handle_ip(const Bit8u *buf, unsigned len)
     unsigned icmplen = len - (14 + ihl);
     handle_icmp(buf, ip, icmp, icmplen);
   } else if (proto == 6) {
-    handle_tcp(buf, ip, ihl, buf + len, srcip, dstip);
+    unsigned ip_total_len = nat_rd16(ip + 2);
+    if (ip_total_len < ihl || (14 + ip_total_len) > len) return;
+    handle_tcp(buf, ip, ihl, ip + ip_total_len, srcip, dstip);
   }
 }
 
@@ -315,7 +322,9 @@ bx_nat_pktmover_c::handle_udp(const Bit8u *eth, const Bit8u *ip, const Bit8u *ud
     } else {
       char ipstr[16];
       nat_ip_to_str(real_ip, ipstr);
+      BX_INFO(("udp: opening flow to %s:%u (guest port %u)", ipstr, (unsigned)dstport, (unsigned)srcport));
       handle = wpb_net_udp_open(ipstr, dstport, nat_udp_data_cb, this);
+      BX_INFO(("udp: flow handle=%d", handle));
       udp_by_key[key] = handle;
       UdpFlow flow;
       flow.guest_port = srcport;
@@ -659,7 +668,9 @@ bx_nat_pktmover_c::handle_tcp(const Bit8u *eth, const Bit8u *ip, unsigned ihl, c
 
     char ipstr[16];
     nat_ip_to_str(dstip, ipstr);
+    BX_INFO(("tcp: opening flow to %s:%u (guest port %u)", ipstr, (unsigned)dstport, (unsigned)srcport));
     int handle = wpb_net_tcp_open(ipstr, dstport, nat_tcp_connect_cb, nat_tcp_data_cb, nat_tcp_closed_cb, this);
+    BX_INFO(("tcp: flow handle=%d", handle));
     tcp_by_key[key] = handle;
     tcp_by_handle[handle] = flow;
     return;
@@ -683,13 +694,20 @@ bx_nat_pktmover_c::handle_tcp(const Bit8u *eth, const Bit8u *ip, unsigned ihl, c
     ack_pending(flow, nat_rd32(tcp + 8));
   }
 
+  bx_bool in_order = (seq == flow.guest_next_seq);
+
   if (paylen > 0) {
-    wpb_net_tcp_send(handle, payload, paylen);
-    flow.guest_next_seq += paylen;
+    if (in_order) {
+      BX_INFO(("tcp: guest->real handle=%d paylen=%u", handle, paylen));
+      wpb_net_tcp_send(handle, payload, paylen);
+      flow.guest_next_seq += paylen;
+    } else {
+      BX_INFO(("tcp: guest retransmit handle=%d seq=%u expected=%u", handle, (unsigned)seq, (unsigned)flow.guest_next_seq));
+    }
     send_tcp_segment(flow, 0x10, NULL, 0);
   }
 
-  if (flags & 0x01) {
+  if ((flags & 0x01) && in_order) {
     flow.guest_next_seq += 1;
     send_tcp_segment(flow, 0x11, NULL, 0);
     wpb_net_tcp_close(handle);
@@ -701,6 +719,7 @@ bx_nat_pktmover_c::handle_tcp(const Bit8u *eth, const Bit8u *ip, unsigned ihl, c
 void
 bx_nat_pktmover_c::OnTcpConnect(int handle, int success)
 {
+  BX_INFO(("tcp: connect result handle=%d success=%d", handle, success));
   std::lock_guard<std::mutex> lock(flow_mutex);
   auto ht = tcp_by_handle.find(handle);
   if (ht == tcp_by_handle.end()) return;
@@ -721,6 +740,7 @@ bx_nat_pktmover_c::OnTcpConnect(int handle, int success)
 void
 bx_nat_pktmover_c::OnTcpData(int handle, const Bit8u *data, int length)
 {
+  BX_INFO(("tcp: real->guest handle=%d length=%d", handle, length));
   std::lock_guard<std::mutex> lock(flow_mutex);
   auto ht = tcp_by_handle.find(handle);
   if (ht == tcp_by_handle.end()) return;
@@ -740,6 +760,7 @@ bx_nat_pktmover_c::OnTcpData(int handle, const Bit8u *data, int length)
 void
 bx_nat_pktmover_c::OnTcpClosed(int handle)
 {
+  BX_INFO(("tcp: closed handle=%d", handle));
   std::lock_guard<std::mutex> lock(flow_mutex);
   auto ht = tcp_by_handle.find(handle);
   if (ht == tcp_by_handle.end()) return;

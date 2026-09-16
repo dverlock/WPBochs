@@ -109,6 +109,9 @@ bx_vga_c::bx_vga_c(void)
   s.x_tilesize = X_TILESIZE;
   s.y_tilesize = Y_TILESIZE;
   timer_id = BX_NULL_TIMER_HANDLE;
+  skip_own_timer = 0;
+  extension_init = 0;
+  pci_enabled = 0;
 }
 
 
@@ -119,11 +122,8 @@ bx_vga_c::~bx_vga_c(void)
 
 
   void
-bx_vga_c::init(void)
+bx_vga_c::init_ports(void)
 {
-  unsigned i;
-  unsigned x,y;
-
   unsigned addr;
   for (addr=0x03B4; addr<=0x03B5; addr++) {
     DEV_register_ioread_handler(this, read_handler, addr, "vga video", 1);
@@ -135,13 +135,17 @@ bx_vga_c::init(void)
     DEV_register_iowrite_handler(this, write_handler, addr, "vga video", 3);
     }
 
+  {
+  Bit8u io_mask[16] = {3, 1, 1, 1, 3, 1, 1, 1, 1, 1, 1, 1, 1, 1, 3, 1};
+  unsigned i = 0;
   for (addr=0x03C0; addr<=0x03CF; addr++) {
-    DEV_register_ioread_handler(this, read_handler, addr, "vga video", 1);
+    DEV_register_ioread_handler(this, read_handler, addr, "vga video", io_mask[i++]);
     DEV_register_iowrite_handler(this, write_handler, addr, "vga video", 3);
     }
+  }
 
   for (addr=0x03D4; addr<=0x03D5; addr++) {
-    DEV_register_ioread_handler(this, read_handler, addr, "vga video", 1);
+    DEV_register_ioread_handler(this, read_handler, addr, "vga video", 3);
     DEV_register_iowrite_handler(this, write_handler, addr, "vga video", 3);
     }
 
@@ -149,6 +153,15 @@ bx_vga_c::init(void)
     DEV_register_ioread_handler(this, read_handler, addr, "vga video", 1);
     DEV_register_iowrite_handler(this, write_handler, addr, "vga video", 3);
     }
+}
+
+  void
+bx_vga_c::init(void)
+{
+  unsigned i;
+  unsigned x,y;
+
+  BX_VGA_THIS init_ports();
 
 
   BX_VGA_THIS s.misc_output.color_emulation  = 1;
@@ -243,7 +256,7 @@ bx_vga_c::init(void)
   }
 
   BX_INFO(("interval=%u", bx_options.Ovga_update_interval->get ()));
-  if (BX_VGA_THIS timer_id == BX_NULL_TIMER_HANDLE) {
+  if (BX_VGA_THIS timer_id == BX_NULL_TIMER_HANDLE && !BX_VGA_THIS skip_own_timer) {
     BX_VGA_THIS timer_id = bx_pc_system.register_timer(this, timer_handler,
        bx_options.Ovga_update_interval->get (), 1, 1, "vga");
   }
@@ -255,18 +268,24 @@ bx_vga_c::init(void)
   BX_VGA_THIS s.x_dotclockdiv2 = 0;
   BX_VGA_THIS s.y_doublescan = 0;
 
-#if BX_SUPPORT_VBE  
-  // The following is for the vbe display extension
-  
+  BX_VGA_THIS init_vga_extension();
+}
+
+  void
+bx_vga_c::init_vga_extension(void)
+{
+#if BX_SUPPORT_VBE
+  unsigned addr;
+
   for (addr=VBE_DISPI_IOPORT_INDEX; addr<=VBE_DISPI_IOPORT_DATA; addr++) {
     DEV_register_ioread_handler(this, vbe_read_handler, addr, "vga video", 7);
     DEV_register_iowrite_handler(this, vbe_write_handler, addr, "vga video", 7);
-  }    
+  }
 #if !BX_PCI_USB_SUPPORT
   for (addr=VBE_DISPI_IOPORT_INDEX_OLD; addr<=VBE_DISPI_IOPORT_DATA_OLD; addr++) {
     DEV_register_ioread_handler(this, vbe_read_handler, addr, "vga video", 7);
     DEV_register_iowrite_handler(this, vbe_write_handler, addr, "vga video", 7);
-  }    
+  }
 #endif
   BX_VGA_THIS s.vbe_cur_dispi=VBE_DISPI_ID0;
   BX_VGA_THIS s.vbe_xres=640;
@@ -284,9 +303,10 @@ bx_vga_c::init(void)
   BX_VGA_THIS s.vbe_line_byte_width=640;
   BX_VGA_THIS s.vbe_lfb_enabled=0;
 
-  
+  BX_VGA_THIS extension_init = 1;
+
   BX_INFO(("VBE Bochs Display Extension Enabled"));
-#endif  
+#endif
 }
 
   void
@@ -375,7 +395,7 @@ bx_vga_c::read(Bit32u address, unsigned io_len)
 #endif  // !BX_USE_VGA_SMF
   bx_bool  horiz_retrace = 0, vert_retrace = 0;
   Bit64u usec;
-  Bit16u vertres;
+  Bit16u ret16, vertres;
   Bit8u retval;
 
 #if defined(VGA_TRACE_FEATURE)
@@ -384,6 +404,17 @@ bx_vga_c::read(Bit32u address, unsigned io_len)
 #else
 #define RETURN return
 #endif
+
+  if (io_len == 2) {
+#if BX_USE_VGA_SMF
+    ret16 = (Bit16u)bx_vga_c::read_handler(0, address, 1);
+    ret16 |= (Bit16u)(bx_vga_c::read_handler(0, address+1, 1)) << 8;
+#else
+    ret16 = (Bit16u)read(address, 1);
+    ret16 |= (Bit16u)(read(address+1, 1)) << 8;
+#endif
+    RETURN(ret16);
+  }
 
 #ifdef __OS2__
   if ( bx_options.videomode == BX_VIDEO_DIRECT )

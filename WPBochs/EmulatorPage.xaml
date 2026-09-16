@@ -119,7 +119,7 @@
         </Grid>
 
         <Popup x:Name="logPopup" IsLightDismissEnabled="True" Opened="logPopup_Opened">
-            <Border Background="#FF101010" BorderBrush="Gray" BorderThickness="1" Width="450" Height="300">
+            <Border x:Name="logPopupBorder" Background="#FF101010" BorderBrush="Gray" BorderThickness="1" Width="450" Height="300">
                 <Grid Margin="8">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>

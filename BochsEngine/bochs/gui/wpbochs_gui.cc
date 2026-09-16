@@ -157,6 +157,15 @@ void RequestPause(bool paused)
   if (!paused) s_pauseCv.notify_all();
 }
 
+void DrawCursorPixel(unsigned x, unsigned y, unsigned char r, unsigned char g, unsigned char b)
+{
+  std::lock_guard<std::mutex> lock(s_fbMutex);
+  if (x >= s_width || y >= s_height) return;
+  EnsureFramebuffer();
+  PutPixel(x, y, r, g, b);
+  s_frameDirty = true;
+}
+
 }
 
   void

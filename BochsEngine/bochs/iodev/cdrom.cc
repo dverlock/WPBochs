@@ -188,7 +188,7 @@ cdrom_interface::capacity()
   if (size < 0) {
      BX_PANIC (("fstat on cdrom image returned err: %s", strerror(errno)));
   }
-  BX_INFO (("cdrom size is %ld bytes", (long) size));
+  BX_INFO (("cdrom size is %lld bytes", size));
   if ((size % 2048) != 0)  {
     BX_ERROR (("expected cdrom image to be a multiple of 2048 bytes"));
   }

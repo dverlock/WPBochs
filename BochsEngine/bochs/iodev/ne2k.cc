@@ -75,6 +75,7 @@ bx_ne2k_c::reset(unsigned type)
   BX_NE2K_THIS s.rempkt_ptr   = 0;
   BX_NE2K_THIS s.localpkt_ptr = 0;
   BX_NE2K_THIS s.address_cnt  = 0;
+  BX_NE2K_THIS s.tx_timer_active = 0;
 
   memset( & BX_NE2K_THIS s.mem, 0, sizeof(BX_NE2K_THIS s.mem));
 
@@ -150,11 +151,12 @@ bx_ne2k_c::write_cr(Bit32u value)
       BX_NE2K_THIS ethdev->sendpkt(& BX_NE2K_THIS s.mem[BX_NE2K_THIS s.tx_page_start*256 - BX_NE2K_MEMSTART], BX_NE2K_THIS s.tx_bytes);
 
     if (BX_NE2K_THIS s.tx_timer_active)
-      BX_PANIC(("CR write, tx timer still active"));
+      BX_ERROR(("CR write, tx timer still active"));
 
     bx_pc_system.activate_timer(BX_NE2K_THIS s.tx_timer_index,
 				(64 + 96 + 4*8 + BX_NE2K_THIS s.tx_bytes*8)/10,
 				0);
+    BX_NE2K_THIS s.tx_timer_active = 1;
   }
 
   if (BX_NE2K_THIS s.CR.rdma_cmd == 0x01 &&

@@ -63,6 +63,9 @@ bx_pci_ide_c::init(void)
   BX_PIDE_THIS s.pci_conf[0x22] = 0x00;
   BX_PIDE_THIS s.pci_conf[0x23] = 0x00;
 
+  BX_PIDE_THIS s.pci_conf[0x41] = 0x80;
+  BX_PIDE_THIS s.pci_conf[0x43] = 0x80;
+
   for (unsigned i=0; i<16; i++)
     BX_PIDE_THIS s.bmregs[i] = 0x00;
 }

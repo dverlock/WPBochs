@@ -1223,13 +1223,13 @@ if (channel == 0) {
 #endif
 	    ret = BX_SELECTED_DRIVE(channel).hard_drive->lseek(logical_sector * 512, SEEK_SET);
             if (ret < 0) {
-              BX_ERROR(("could not lseek() hard drive image file at byte %lu", (unsigned long)logical_sector * 512));
+              BX_ERROR(("could not lseek() hard drive image file at byte %lld", (long long)logical_sector * 512));
 	      command_aborted (channel, BX_SELECTED_CONTROLLER(channel).current_command);
 	      return;
 	    }
 	    ret = BX_SELECTED_DRIVE(channel).hard_drive->write((bx_ptr_t) BX_SELECTED_CONTROLLER(channel).buffer, 512);
             if (ret < 512) {
-              BX_ERROR(("could not write() hard drive image file at byte %lu", (unsigned long)logical_sector*512));
+              BX_ERROR(("could not write() hard drive image file at byte %lld", (long long)logical_sector*512));
 	      command_aborted (channel, BX_SELECTED_CONTROLLER(channel).current_command);
 	      return;
 	    }
@@ -1775,6 +1775,11 @@ if (channel == 0) {
 			      }
 			      break;
 
+			      case 0x35: // synchronize cache
+				    atapi_cmd_nop(channel);
+				    raise_interrupt(channel);
+				    break;
+
 			      case 0x55: // mode select
 			      case 0xa6: // load/unload cd
 			      case 0x4b: // pause/resume
@@ -2087,6 +2092,14 @@ if (channel == 0) {
 
         case 0xef: // SET FEATURES
 	  switch(BX_SELECTED_CONTROLLER(channel).features) {
+	    case 0x03: // Set transfer mode
+	      BX_SELECTED_CONTROLLER(channel).status.busy = 0;
+	      BX_SELECTED_CONTROLLER(channel).status.drive_ready = 1;
+	      BX_SELECTED_CONTROLLER(channel).status.drq = 0;
+	      BX_SELECTED_CONTROLLER(channel).status.err = 0;
+	      raise_interrupt(channel);
+	    break;
+
 	    case 0x02: // Enable and
 	    case 0x82: //  Disable write cache.
 	    case 0xAA: // Enable and
@@ -3325,7 +3338,7 @@ off_t concat_image_t::lseek (off_t offset, int whence)
   }
 
   seek_was_last_op = 1;
-  return ::lseek(fd, offset, whence);
+  return ::lseek(fd, (long)offset, whence);
 }
 
 ssize_t concat_image_t::read (void* buf, size_t count)
@@ -3577,7 +3590,7 @@ off_t sparse_image_t::lseek (off_t offset, int whence)
 
  //printf("Seeking to position %ld\n", (long) offset);
 
- set_virtual_page(offset >> pagesize_shift);
+ set_virtual_page((uint32)(offset >> pagesize_shift));
  position_page_offset = offset & pagesize_mask;
 
  return 0;
@@ -3625,7 +3638,7 @@ ssize_t sparse_image_t::read_page_fragment(uint32 read_virtual_page, uint32 read
 
    if (physical_offset != underlying_current_filepos)
    {
-     int ret = ::lseek(fd, physical_offset, SEEK_SET);
+     int ret = ::lseek(fd, (long)physical_offset, SEEK_SET);
      // underlying_current_filepos update deferred
      if (ret == -1)
        panic(strerror(errno));
@@ -3725,7 +3738,7 @@ ssize_t sparse_image_t::write (const void* buf, size_t count)
      // We just add on another page at the end of the file
      // Reclamation, compaction etc should currently be done off-line
 
-     size_t  data_size = underlying_filesize - data_start;
+     size_t  data_size = (size_t)(underlying_filesize - data_start);
      BX_ASSERT((data_size % pagesize) == 0);
 
 
@@ -3760,7 +3773,7 @@ ssize_t sparse_image_t::write (const void* buf, size_t count)
        }
 
        int ret;
-       ret = ::lseek(fd, page_file_start, SEEK_SET);
+       ret = ::lseek(fd, (long)page_file_start, SEEK_SET);
        // underlying_current_filepos update deferred
        if (-1 == ret) panic(strerror(errno));
 
@@ -3782,7 +3795,7 @@ ssize_t sparse_image_t::write (const void* buf, size_t count)
        // This produces a sparse file which has blanks
        // Also very quick, even when pagesize is massive
        int ret;
-       ret = ::lseek(fd, page_file_start + pagesize - 4, SEEK_SET);
+       ret = ::lseek(fd, (long)(page_file_start + pagesize - 4), SEEK_SET);
        // underlying_current_filepos update deferred
        if (-1 == ret) panic(strerror(errno));
 
@@ -3804,7 +3817,7 @@ ssize_t sparse_image_t::write (const void* buf, size_t count)
 
    if (physical_offset != underlying_current_filepos)
    {
-     int ret = ::lseek(fd, physical_offset, SEEK_SET);
+     int ret = ::lseek(fd, (long)physical_offset, SEEK_SET);
      // underlying_current_filepos update deferred
      if (ret == -1)
        panic(strerror(errno));
@@ -3864,7 +3877,7 @@ ssize_t sparse_image_t::write (const void* buf, size_t count)
 
    if (!done)
    {
-     int ret = ::lseek(fd, pagetable_write_from, SEEK_SET);
+     int ret = ::lseek(fd, (long)pagetable_write_from, SEEK_SET);
      // underlying_current_filepos update deferred
      if (ret == -1) panic(strerror(errno));
 
@@ -4217,7 +4230,7 @@ redolog_t::lseek (off_t offset, int whence)
                 return -1;
         }
 
-        extent_index = offset / dtoh32(header.specific.extent);
+        extent_index = (Bit32u)(offset / dtoh32(header.specific.extent));
         extent_offset = (offset % dtoh32(header.specific.extent)) / 512;
 
         BX_DEBUG(("redolog : lseeking extent index %d, offset %d",extent_index, extent_offset));
@@ -4251,7 +4264,7 @@ redolog_t::read (void* buf, size_t count)
 
         // FIXME if same extent_index as before we can skip bitmap read
 
-        ::lseek(fd, bitmap_offset, SEEK_SET);
+        ::lseek(fd, (long)bitmap_offset, SEEK_SET);
 
         if (::read(fd, bitmap,  dtoh32(header.specific.bitmap)) != (ssize_t)dtoh32(header.specific.bitmap))
         {
@@ -4267,7 +4280,7 @@ redolog_t::read (void* buf, size_t count)
                 return 0;
         }
         
-        ::lseek(fd, bloc_offset, SEEK_SET);
+        ::lseek(fd, (long)bloc_offset, SEEK_SET);
 
         return (::read(fd, buf, count));
 }
@@ -4304,8 +4317,8 @@ redolog_t::write (const void* buf, size_t count)
 
                 // Write bitmap
                 bitmap_offset  = (off_t)STANDARD_HEADER_SIZE + (dtoh32(header.specific.catalog) * sizeof(Bit32u));
-                bitmap_offset += (off_t)512 * dtoh32(catalog[extent_index]) * (extent_blocs + bitmap_blocs); 
-                ::lseek(fd, bitmap_offset, SEEK_SET);
+                bitmap_offset += (off_t)512 * dtoh32(catalog[extent_index]) * (extent_blocs + bitmap_blocs);
+                ::lseek(fd, (long)bitmap_offset, SEEK_SET);
                 for(i=0; i<bitmap_blocs; i++)
                 {
                         ::write(fd, zerobuffer, 512);
@@ -4329,12 +4342,12 @@ redolog_t::write (const void* buf, size_t count)
         BX_DEBUG(("redolog : bloc offset is %x", (Bit32u)bloc_offset));
 
         // Write bloc
-        ::lseek(fd, bloc_offset, SEEK_SET);
+        ::lseek(fd, (long)bloc_offset, SEEK_SET);
         written = ::write(fd, buf, count);
 
         // Write bitmap
         // FIXME if same extent_index as before we can skip bitmap read
-        ::lseek(fd, bitmap_offset, SEEK_SET);
+        ::lseek(fd, (long)bitmap_offset, SEEK_SET);
         if (::read(fd, bitmap,  dtoh32(header.specific.bitmap)) != (ssize_t)dtoh32(header.specific.bitmap))
         {
                 BX_PANIC(("redolog : failed to read bitmap for extent %d", extent_index));
@@ -4345,7 +4358,7 @@ redolog_t::write (const void* buf, size_t count)
         if ( ((bitmap[extent_offset/8] >> (extent_offset%8)) & 0x01) == 0x00 )
         {
                 bitmap[extent_offset/8] |= 1 << (extent_offset%8);
-                ::lseek(fd, bitmap_offset, SEEK_SET);
+                ::lseek(fd, (long)bitmap_offset, SEEK_SET);
                 ::write(fd, bitmap,  dtoh32(header.specific.bitmap));
         }
 
@@ -4357,7 +4370,7 @@ redolog_t::write (const void* buf, size_t count)
 
                 BX_DEBUG(("redolog : writing catalog at offset %x", (Bit32u)catalog_offset));
 
-                ::lseek(fd, catalog_offset, SEEK_SET);
+                ::lseek(fd, (long)catalog_offset, SEEK_SET);
                 ::write(fd, &catalog[extent_index], sizeof(Bit32u));
         }
 

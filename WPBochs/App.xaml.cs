@@ -12,7 +12,6 @@ namespace WPBochs
     public sealed partial class App : Application
     {
         private TransitionCollection transitions;
-
         public App()
         {
             InitializeComponent();

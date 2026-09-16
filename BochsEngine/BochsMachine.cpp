@@ -228,6 +228,12 @@ unsigned int BochsMachine::GetFrameHeight()
     return WPBochsGui::GetDimensions().height;
 }
 
+unsigned long long BochsMachine::GetFrameSize()
+{
+    WPBochsGui::FrameInfo info = WPBochsGui::GetDimensions();
+    return (((unsigned long long)info.width) << 32) | (unsigned long long)info.height;
+}
+
 bool BochsMachine::TryCopyFrame(const Array<unsigned char>^ destination)
 {
     if (!WPBochsGui::TakeFrameDirty())

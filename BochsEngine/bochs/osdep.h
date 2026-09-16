@@ -60,7 +60,7 @@ extern "C" {
 #  define S_ISCHR(m)      (((m) & S_IFMT) == S_IFCHR)
 
   // VCPP includes also are missing these
-#  define off_t long
+#  define off_t __int64
 
 // win32 has snprintf though with different name.
 #define snprintf _snprintf

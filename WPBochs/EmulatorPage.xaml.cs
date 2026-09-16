@@ -29,12 +29,10 @@ namespace WPBochs
     {
         private BochsMachine _machine;
         private WriteableBitmap _bitmap;
-        private DispatcherTimer _ipsTimer;
+        private DispatcherTimer _ipsTimer, _logFlushTimer;
         private byte[] _frameBuffer, _grayscaleScratch;
         private uint _bitmapWidth, _bitmapHeight;
-        private bool _mouseEnabled = true;
-        private bool _networkEnabled = true;
-        private bool _paused, _machineStopped, _twoFingerTapConsumed;
+        private bool _mouseEnabled = true, _networkEnabled = true, _paused, _machineStopped, _twoFingerTapConsumed;
         private ulong _lastInstructionCount;
         private const double TapMoveThreshold = 12.0, KeyHeight = 34, NavButtonHeight = 24;
         private readonly Dictionary<uint, TouchInfo> _touches = new Dictionary<uint, TouchInfo>();
@@ -43,8 +41,12 @@ namespace WPBochs
         private int _currentKeyboardPage, _logTextLength;
         private const int MaxLogLines = 100;
         private DisplayRequest _displayRequest;
-        private string _bochsrcText = "";
-        private string _pendingPanicLogText;
+        private string _bochsrcText = "", _pendingPanicLogText;
+        private readonly List<LogEntry> _logBuffer = new List<LogEntry>(), _fullLogBuffer = new List<LogEntry>(), _pendingLogLines = new List<LogEntry>();
+        private readonly object _pendingLogLock = new object();
+        private static readonly HashSet<int> ModifierKeyCodes = new HashSet<int> { BxKeys.SHIFT_L, BxKeys.SHIFT_R, BxKeys.CTRL_L, BxKeys.CTRL_R, BxKeys.ALT_L, BxKeys.ALT_R, BxKeys.WIN_L };
+        private static readonly SolidColorBrush ModifierActiveBrush = new SolidColorBrush(Color.FromArgb(0xFF, 0x33, 0x99, 0xFF));
+        private readonly Dictionary<int, bool> _modifierToggleState = new Dictionary<int, bool>();
 
         private class TouchInfo { public Point StartPosition; public Point LastPosition; public bool MovedBeyondThreshold; public bool Dragging; }
 
@@ -160,8 +162,9 @@ namespace WPBochs
         private void CompositionTarget_Rendering(object sender, object e)
         {
             if (_machine == null || _paused) return;
-            uint w = _machine.GetFrameWidth();
-            uint h = _machine.GetFrameHeight();
+            ulong frameSize = _machine.GetFrameSize();
+            uint w = (uint)(frameSize >> 32);
+            uint h = (uint)(frameSize & 0xFFFFFFFF);
             if (w == 0 || h == 0) return;
             if (_bitmap == null || w != _bitmapWidth || h != _bitmapHeight)
             {
@@ -222,21 +225,6 @@ namespace WPBochs
             ipsText.Text = delta.ToString("N0") + " IPS";
         }
 
-        private void SendMouseMove(Point from, Point to)
-        {
-            double dx = to.X - from.X;
-            double dy = to.Y - from.Y;
-            if (dx == 0 && dy == 0) return;
-            _machine.MouseMove((int)dx, -(int)dy);
-        }
-
-        private static double Distance(Point a, Point b)
-        {
-            double dx = a.X - b.X;
-            double dy = a.Y - b.Y;
-            return Math.Sqrt(dx * dx + dy * dy);
-        }
-
         private void displaySurface_PointerPressed(object sender, PointerRoutedEventArgs e)
         {
             if (!_mouseEnabled || _machine == null) return;
@@ -283,8 +271,12 @@ namespace WPBochs
             TouchInfo touch;
             if (!_touches.TryGetValue(id, out touch)) return;
             Point point = e.GetCurrentPoint(displayImage).Position;
-            if (!touch.MovedBeyondThreshold && Distance(touch.StartPosition, point) > TapMoveThreshold) { touch.MovedBeyondThreshold = true; StopHoldTimer(id); }
-            SendMouseMove(touch.LastPosition, point);
+            double startDx = touch.StartPosition.X - point.X;
+            double startDy = touch.StartPosition.Y - point.Y;
+            if (!touch.MovedBeyondThreshold && Math.Sqrt(startDx * startDx + startDy * startDy) > TapMoveThreshold) { touch.MovedBeyondThreshold = true; StopHoldTimer(id); }
+            double moveDx = point.X - touch.LastPosition.X;
+            double moveDy = point.Y - touch.LastPosition.Y;
+            if (moveDx != 0 || moveDy != 0) _machine.MouseMove((int)moveDx, -(int)moveDy);
             touch.LastPosition = point;
         }
 
@@ -326,15 +318,30 @@ namespace WPBochs
         }
 
         private void keyboardToggleButton_Click(object sender, RoutedEventArgs e) => keyboardOverlay.Visibility = keyboardOverlay.Visibility == Visibility.Visible ? Visibility.Collapsed : Visibility.Visible;
-
-        private readonly List<LogEntry> _logBuffer = new List<LogEntry>();
-        private readonly List<LogEntry> _fullLogBuffer = new List<LogEntry>();
-        private readonly List<LogEntry> _pendingLogLines = new List<LogEntry>();
-        private readonly object _pendingLogLock = new object();
-        private DispatcherTimer _logFlushTimer;
         private struct LogEntry { public string Line; public bool IsError; }
 
-        private void logButton_Click(object sender, RoutedEventArgs e) => logPopup.IsOpen = !logPopup.IsOpen;
+        private void logButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (!logPopup.IsOpen) PositionLogPopup();
+            logPopup.IsOpen = !logPopup.IsOpen;
+        }
+
+        private void PositionLogPopup()
+        {
+            Point buttonPos = logButton.TransformToVisual(null).TransformPoint(new Point(0, 0));
+            double buttonRight = buttonPos.X + logButton.ActualWidth;
+            double buttonBottom = buttonPos.Y + logButton.ActualHeight;
+            double popupWidth = logPopupBorder.Width;
+
+            double desiredX = buttonRight - popupWidth;
+            double screenWidth = Window.Current.Bounds.Width;
+            if (desiredX + popupWidth > screenWidth) desiredX = screenWidth - popupWidth;
+            if (desiredX < 0) desiredX = 0;
+
+            logPopup.HorizontalOffset = desiredX;
+            logPopup.VerticalOffset = buttonBottom;
+        }
+
         private void logPopup_Opened(object sender, object e)
         {
             RebuildLogTextBox();
@@ -369,7 +376,6 @@ namespace WPBochs
             lock (_pendingLogLock) { if (_pendingLogLines.Count == 0) return; pending = new List<LogEntry>(_pendingLogLines); _pendingLogLines.Clear();}
             logText.Text = "Last " + MaxLogLines + " lines of Bochs output";
             foreach (LogEntry entry in pending) { _logBuffer.Add(entry); if (_logBuffer.Count > MaxLogLines) _logBuffer.RemoveAt(0); _fullLogBuffer.Add(entry); }
-
             if (logPopup.IsOpen)
             {
                 logTextBox.IsReadOnly = false;
@@ -404,11 +410,8 @@ namespace WPBochs
             int offset = 0;
             foreach (LogEntry entry in _logBuffer)
             {
-                if (entry.IsError)
-                {
-                    ITextRange range = doc.GetRange(offset, offset + entry.Line.Length);
-                    range.CharacterFormat.ForegroundColor = Colors.OrangeRed;
-                }
+                ITextRange range = doc.GetRange(offset, offset + entry.Line.Length);
+                range.CharacterFormat.ForegroundColor = entry.IsError ? Colors.OrangeRed : Colors.White;
                 offset += entry.Line.Length + 1;
             }
             _logTextLength = offset;
@@ -449,8 +452,6 @@ namespace WPBochs
                     {
                         if (saveAndExitRadio.IsChecked == true)
                         {
-                            machine.ResolvePanic(2);
-                            StopMachine();
                             Windows.ApplicationModel.PackageVersion version = Windows.ApplicationModel.Package.Current.Id.Version;
                             StringBuilder sb = new StringBuilder();
                             sb.AppendLine("Sorry, WPBochs encountered an execution error and fired a PANIC.");
@@ -476,6 +477,8 @@ namespace WPBochs
                             picker.SuggestedStartLocation = PickerLocationId.DocumentsLibrary;
                             picker.SuggestedFileName = "wpb-panic-" + DateTime.Now.ToString("dd.MM.yyyy-HH-mm");
                             picker.FileTypeChoices.Add("Log file", new List<string> { ".log" });
+                            machine.ResolvePanic(2);
+                            StopMachine();
                             picker.PickSaveFileAndContinue();
                         }
                         else if (contRadio.IsChecked == true) machine.ResolvePanic(0);
@@ -649,9 +652,6 @@ namespace WPBochs
                 }
             }
         }
-        private static readonly HashSet<int> ModifierKeyCodes = new HashSet<int> { BxKeys.SHIFT_L, BxKeys.SHIFT_R, BxKeys.CTRL_L, BxKeys.CTRL_R, BxKeys.ALT_L, BxKeys.ALT_R };
-        private static readonly SolidColorBrush ModifierActiveBrush = new SolidColorBrush(Color.FromArgb(0xFF, 0x33, 0x99, 0xFF));
-        private readonly Dictionary<int, bool> _modifierToggleState = new Dictionary<int, bool>();
 
         private void KeyButton_PointerPressed(object sender, PointerRoutedEventArgs e)
         {

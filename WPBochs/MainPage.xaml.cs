@@ -285,7 +285,16 @@ namespace WPBochs
                     break;
                 case "config":
                     string configText = await FileIO.ReadTextAsync(file);
-                    await ApplyConfigAsync(ParseBochsrcText(configText));
+                    Dictionary<string, string> parsedConfig = new Dictionary<string, string>();
+                    foreach (string rawLine in configText.Split('\n'))
+                    {
+                        string configLine = rawLine.TrimEnd('\r').Trim();
+                        if (configLine.Length == 0 || configLine.StartsWith("#")) continue;
+                        int idx = configLine.IndexOf(':');
+                        if (idx < 0) continue;
+                        parsedConfig[configLine.Substring(0, idx).Trim()] = configLine.Substring(idx + 1).Trim();
+                    }
+                    await ApplyConfigAsync(parsedConfig);
                     return;
             }
             SaveSettings();
@@ -379,10 +388,7 @@ namespace WPBochs
                 byte[] header = new byte[64];
                 reader.ReadBytes(header);
                 byte[] cookie = { (byte)'c', (byte)'o', (byte)'n', (byte)'e', (byte)'c', (byte)'t', (byte)'i', (byte)'x' };
-                for (int i = 0; i < cookie.Length; i++)
-                {
-                    if (header[i] != cookie[i]) return false;
-                }
+                for (int i = 0; i < cookie.Length; i++) if (header[i] != cookie[i]) return false;
                 uint diskType = (uint)((header[60] << 24) | (header[61] << 16) | (header[62] << 8) | header[63]);
                 return diskType == 3;
             }
@@ -505,28 +511,6 @@ namespace WPBochs
             await FileIO.WriteTextAsync(args.File, await BuildBochsrcAsync(biosFolder));
         }
 
-        private static Dictionary<string, string> ParseBochsrcText(string text)
-        {
-            Dictionary<string, string> result = new Dictionary<string, string>();
-            foreach (string rawLine in text.Split('\n'))
-            {
-                string line = rawLine.TrimEnd('\r').Trim();
-                if (line.Length == 0 || line.StartsWith("#")) continue;
-                int idx = line.IndexOf(':');
-                if (idx < 0) continue;
-                result[line.Substring(0, idx).Trim()] = line.Substring(idx + 1).Trim();
-            }
-            return result;
-        }
-
-        private static string ExtractQuoted(string s)
-        {
-            int start = s.IndexOf('"');
-            if (start < 0) return null;
-            int end = s.IndexOf('"', start + 1);
-            return end < 0 ? null : s.Substring(start + 1, end - start - 1);
-        }
-
         private static bool ExtractEnabled(string s)
         {
             int idx = s.IndexOf("enabled=");
@@ -540,7 +524,6 @@ namespace WPBochs
             {
                 List<string> missingPaths = new List<string>();
                 string val;
-
                 flpaCheck.IsChecked = cfg.ContainsKey("floppya");
                 await ApplyConfigFileAsync(cfg, "floppya", "flpa", f => { _flpaFile = f; flpaText.Text = f.Name; }, missingPaths);
                 flpbCheck.IsChecked = cfg.ContainsKey("floppyb");
@@ -551,7 +534,6 @@ namespace WPBochs
                 await ApplyConfigFileAsync(cfg, "diskd", "hd1", f => { _hd1File = f; hd1Text.Text = f.Name; }, missingPaths);
                 cdromCheck.IsChecked = cfg.ContainsKey("cdromd");
                 await ApplyConfigFileAsync(cfg, "cdromd", "cdrom", f => { _cdromFile = f; cdromText.Text = f.Name; }, missingPaths);
-
                 sb16Check.IsChecked = cfg.ContainsKey("sb16");
                 ne2kCheck.IsChecked = cfg.ContainsKey("ne2k");
                 if (cfg.TryGetValue("mouse", out val)) mouseCheck.IsChecked = ExtractEnabled(val);
@@ -560,7 +542,6 @@ namespace WPBochs
                 if (cfg.TryGetValue("acpi", out val)) acpiCheck.IsChecked = ExtractEnabled(val);
                 if (cfg.TryGetValue("newharddrivesupport", out val)) newHDSupportCheck.IsChecked = ExtractEnabled(val);
                 if (cfg.TryGetValue("slowdown_timer", out val)) slowdownTimerCheck.IsChecked = ExtractEnabled(val);
-
                 double megs;
                 if (cfg.TryGetValue("megs", out val) && double.TryParse(val, NumberStyles.Float, CultureInfo.InvariantCulture, out megs)) memorySlider.Value = megs;
                 if (cfg.TryGetValue("ips", out val)) ipsBox.Text = val;
@@ -576,9 +557,7 @@ namespace WPBochs
                     kbAtRadio.IsChecked = val == "at";
                     kbMfRadio.IsChecked = val == "mf";
                 }
-
                 UpdateNewHDSupportLock();
-
                 if (missingPaths.Count > 0)
                 {
                     MessageDialog dialog = new MessageDialog("The following files referenced by the config could not be found:" + Environment.NewLine + string.Join(Environment.NewLine, missingPaths), "Missing files");
@@ -594,7 +573,9 @@ namespace WPBochs
         {
             string line;
             if (!cfg.TryGetValue(key, out line)) return;
-            string path = ExtractQuoted(line);
+            int quoteStart = line.IndexOf('"');
+            int quoteEnd = quoteStart < 0 ? -1 : line.IndexOf('"', quoteStart + 1);
+            string path = quoteEnd < 0 ? null : line.Substring(quoteStart + 1, quoteEnd - quoteStart - 1);
             if (string.IsNullOrEmpty(path)) return;
             try
             {
@@ -624,29 +605,24 @@ namespace WPBochs
                 BasicProperties flpaProps = await _flpaFile.GetBasicPropertiesAsync();
                 sb.AppendLine($"floppya: {GetFloppyTypeKey(flpaProps.Size)}=\"{_flpaFile.Path}\", status=inserted");
             }
-            else sb.AppendLine();
             if (flpbCheck.IsChecked == true && _flpbFile != null)
             {
                 BasicProperties flpbProps = await _flpbFile.GetBasicPropertiesAsync();
                 sb.AppendLine($"floppyb: {GetFloppyTypeKey(flpbProps.Size)}=\"{_flpbFile.Path}\", status=inserted");
             }
-            else sb.AppendLine();
             if (hd0Check.IsChecked == true && _hd0File != null)
             {
                 BasicProperties props = await _hd0File.GetBasicPropertiesAsync();
                 long cyl = ComputeCylinders(props.Size, 16, 63);
                 sb.AppendLine($"diskc: file=\"{_hd0File.Path}\", cyl={cyl}, heads=16, spt=63");
             }
-            else sb.AppendLine();
             if (hd1Check.IsChecked == true && _hd1File != null)
             {
                 BasicProperties props = await _hd1File.GetBasicPropertiesAsync();
                 long cyl = ComputeCylinders(props.Size, 16, 63);
                 sb.AppendLine($"diskd: file=\"{_hd1File.Path}\", cyl={cyl}, heads=16, spt=63");
             }
-            else sb.AppendLine();
             if (cdromCheck.IsChecked == true && _cdromFile != null) sb.AppendLine($"cdromd: dev=\"{_cdromFile.Path}\", status=inserted");
-            else sb.AppendLine();
             sb.AppendLine($"romimage: file={biosFolder.Path}\\{BiosFileName}, address=0xe0000");
             sb.AppendLine($"vgaromimage: {biosFolder.Path}\\{VgaBiosFileName}");
             sb.AppendLine($"megs: {(int)memorySlider.Value}");

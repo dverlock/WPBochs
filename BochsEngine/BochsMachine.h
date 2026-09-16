@@ -37,6 +37,7 @@ namespace BochsEngine
 
         unsigned int GetFrameWidth();
         unsigned int GetFrameHeight();
+        unsigned long long GetFrameSize();
 
         bool TryCopyFrame(const Platform::Array<unsigned char>^ destination);
 

@@ -1269,6 +1269,7 @@ bx_atexit(void)
 
 #if BX_PROVIDE_DEVICE_MODELS==1
   if (been_here == 0) {
+    been_here = 1;
     bx_pc_system.exit();
     }
 #endif

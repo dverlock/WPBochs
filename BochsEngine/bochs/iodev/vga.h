@@ -69,8 +69,8 @@
   #define VBE_DISPI_LFB_PHYSICAL_ADDRESS  0xE0000000
 
   
-#define VBE_DISPI_TOTAL_VIDEO_MEMORY_KB		(VBE_DISPI_TOTAL_VIDEO_MEMORY_MB * 1024)  
-#define VBE_DISPI_TOTAL_VIDEO_MEMORY_BYTES 	(VBE_DISPI_TOTAL_VIDEO_MEMORY_KB * 1024)  
+#define VBE_DISPI_TOTAL_VIDEO_MEMORY_KB		(VBE_DISPI_TOTAL_VIDEO_MEMORY_MB * 1024)
+#define VBE_DISPI_TOTAL_VIDEO_MEMORY_BYTES 	(VBE_DISPI_TOTAL_VIDEO_MEMORY_KB * 1024)
 
 #define BX_MAX_XRES VBE_DISPI_MAX_XRES
 #define BX_MAX_YRES VBE_DISPI_MAX_YRES
@@ -106,6 +106,7 @@ public:
   bx_vga_c(void);
   ~bx_vga_c(void);
   virtual void   init(void);
+  virtual void   init_ports(void);
   virtual void   reset(unsigned type);
   virtual Bit8u  mem_read(Bit32u addr);
   // Note: either leave value of type Bit8u, or mask it when
@@ -125,8 +126,12 @@ public:
   virtual void   get_text_snapshot(Bit8u **text_snapshot, unsigned *txHeight,
                                    unsigned *txWidth);
   virtual Bit8u  get_actl_palette_idx(Bit8u index);
+  virtual void   init_vga_extension(void);
 
-private:
+  bx_bool extension_init;
+  bx_bool pci_enabled;
+
+protected:
 
   static Bit32u read_handler(void *this_ptr, Bit32u address, unsigned io_len);
   static void   write_handler(void *this_ptr, Bit32u address, Bit32u value, unsigned io_len);
@@ -238,7 +243,7 @@ private:
     unsigned line_compare;
     unsigned vertical_display_end;
     bx_bool  vga_tile_updated[BX_NUM_X_TILES][BX_NUM_Y_TILES];
-    Bit8u vga_memory[256 * 1024];
+    Bit8u vga_memory[4 * 1024 * 1024];
     Bit8u text_snapshot[32 * 1024]; // current text snapshot
     Bit8u rgb[3 * 256];
     Bit8u tile[X_TILESIZE * Y_TILESIZE * 4]; /**< Currently allocates the tile as large as needed. */
@@ -286,12 +291,13 @@ private:
 #endif
 
   int timer_id;
+  bx_bool skip_own_timer;
 
   public:
   static void   timer_handler(void *);
   BX_VGA_SMF void   timer(void);
 
-  private:
+  protected:
   BX_VGA_SMF void   update(void);
   BX_VGA_SMF void   dump_status(void);
   BX_VGA_SMF void determine_screen_dimensions(unsigned *piHeight,

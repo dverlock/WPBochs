@@ -25,6 +25,8 @@ void ShutdownNow();
 
 void RequestPause(bool paused);
 
+void DrawCursorPixel(unsigned x, unsigned y, unsigned char r, unsigned char g, unsigned char b);
+
 typedef void (*AcpiShutdownCallback)(void);
 void SetAcpiShutdownCallback(AcpiShutdownCallback callback);
 void NotifyAcpiShutdown();
