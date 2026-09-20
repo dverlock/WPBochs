@@ -1,5 +1,7 @@
 ![WPBochs logo](https://dverlock.top/wpbochs/wpbochslogo.png)
 ---
+## IMPORTANT NOTICE: WPBochs is discontinued as of 20.09.2026. From that date onward, only GitHub Issue fixes will be released. You can still fork the project and continue working on it yourself.
+
 WPBochs is a port of [Bochs](https://bochs.sourceforge.io/), the x86 emulator, for Windows Phone 8.1, bringing the ability to run older versions of Windows, MS-DOS/FreeDOS and Linux to Windows Phones. It features emulating an FPU, Sound Blaster 16 sound card, CD-ROM drive, and much more. You can also create floppy/hard disk images directly inside WPBochs through its Image creator. If you have no images to test WPBochs on, there already is a built-in demo floppy drive with FreeDOS and some freeware games on it.
 > **Note: WPBochs is not affiliated with Microsoft.**
 ### Screenshots
@@ -34,13 +36,13 @@ or from my webpage: https://dverlock.top/wpbochs.
 ### Full feature list
  - FPU emulation
  - Mouse emulation
- - Sound Blaster 16 emulation (experimental)
  - Floppy, hard drive and CD-ROM emulation
+ - Sound Blaster 16 emulation (experimental)
  - i440fx emulation (experimental)
- - ACPI emulation (extremely experimental and limited)
+ - ACPI emulation (experimental)
  - Creating hard/floppy disk images inside WPBochs
  - Slowdown timer (throttles internal clock to real-time speed)
- - Support for single-file VMDK hard disks
+ - Support for single-file VMDK, VDI and VHD hard disks
 ---
 ### Known issues
  - Opening/closing in-app log freezes the whole app for a couple of seconds on low-end devices
@@ -52,15 +54,12 @@ Try installing VCLibs 12.00. You can find it online or download directly on [my 
 
 On Windows 10 Mobile, installation will fail with an untrusted certificate error, so WPBochs can only be installed there through CMD Injector.
 
-> **Note: WPBochs was not tested under Windows 10 Mobile.**
 #### Why is emulation so slow?
 Bochs itself is a *pure software interpreter* of x86 code, which can be very slow depending on what architecture and clock speed of the host CPU you are using. In Windows Phone's case, it's an ARM processor with usually a low clock speed, so Bochs will run at about a speed of a Pentium 1 in a best-case scenario.
 #### Bochs hangs on a black screen at startup. How to fix this?
-There might be two solutions to your problem:
- - **Turn off ACPI emulation.** At this moment its emulation is extremely limited and some ACPI-based systems hang and refuse to boot while trying to access ACPI features.
- - **Lower the memory amount.**  If you set the memory amount near or at WPBochs' memory limit (set by Windows Phone's system itself), Bochs will hang on startup because of failing to allocate required memory.
+Lower the memory amount. If you set the memory amount near or at WPBochs' memory limit (set by Windows Phone's system itself), Bochs will hang on startup with 0 IPS because of failing to allocate required memory.
 #### What OSes can I run inside WPBochs?
-As far as my tests went, FreeDOS, MS-DOS 5.0, Windows 3.1, Windows 95, Windows XP and DeLi Linux successfully booted and worked in WPBochs.
+As far as my tests went, FreeDOS, MS-DOS 5.0-8.0, Windows 1.01-95, Windows XP, Windows 7, DeLi Linux and Damn Small Linux successfully booted and worked in WPBochs.
 #### Why make such an app?
 You might already know that x86 emulators have been ported everywhere (macOS, Linux, Android, iOS etc.). After noticing that there wasn't any x86 emulator available for Windows Phones (except DOSBox, but it's limited to only DOS apps and not full x86 emulation), I decided to take the port of Bochs myself.
 #### I still have some questions/need troubleshooting, or I want to request a feature. Where can I get help/in touch with the developer?
